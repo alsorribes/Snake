@@ -1,4 +1,4 @@
-package com.example.snakegame.model
+package com.example.snake.model
 
 /**
  * Estado completo de una partida en un instante dado.

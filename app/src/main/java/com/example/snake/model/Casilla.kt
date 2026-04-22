@@ -1,4 +1,4 @@
-package com.example.snakegame.model
+package com.example.snake.model
 
 /**
  * Representa una casilla (celda) de la parrilla del juego.
