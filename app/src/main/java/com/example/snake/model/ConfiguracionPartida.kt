@@ -1,4 +1,4 @@
-package com.example.snakegame.model
+package com.example.snake.model
 
 // Tamaños de parrilla disponibles (filas x columnas)
 enum class TamanoParrilla(val filas: Int, val columnas: Int, val etiqueta: String) {

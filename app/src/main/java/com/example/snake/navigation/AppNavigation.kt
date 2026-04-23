@@ -1,11 +1,11 @@
-package com.example.snakegame.navigation
+package com.example.snake.navigation
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import com.example.snakegame.viewmodel.GameViewModel
-import com.example.snakegame.viewmodel.Pantalla
+import com.example.snake.viewmodel.GameViewModel
+import com.example.snake.viewmodel.Pantalla
 
 // ─── Rutas de navegación ────────────────────────────────────────────────────
 // Se definen como constantes para evitar strings hardcoded en toda la app.

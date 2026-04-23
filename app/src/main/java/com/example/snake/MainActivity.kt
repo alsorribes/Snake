@@ -1,4 +1,4 @@
-package com.example.snakegame
+package com.example.snake
 
 import android.content.Intent
 import android.os.Bundle
@@ -7,15 +7,15 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import com.example.snakegame.navigation.AppNavigation
-import com.example.snakegame.ui.screens.AyudaScreen
-import com.example.snakegame.ui.screens.ConfiguracionScreen
-import com.example.snakegame.ui.screens.JuegoScreen
-import com.example.snakegame.ui.screens.MenuPrincipalScreen
-import com.example.snakegame.ui.screens.ResultadosScreen
-import com.example.snakegame.ui.theme.SnakeGameTheme
-import com.example.snakegame.viewmodel.GameViewModel
-import com.example.snakegame.viewmodel.Pantalla
+import com.example.snake.navigation.AppNavigation
+import com.example.snake.ui.screens.help.AyudaScreen
+import com.example.snake.ui.screens.config.ConfiguracionScreen
+import com.example.snake.ui.screens.game.JuegoScreen
+import com.example.snake.ui.screens.menu.MenuPrincipalScreen
+import com.example.snake.ui.screens.results.ResultadosScreen
+import com.example.snake.ui.theme.SnakeTheme
+import com.example.snake.viewmodel.GameViewModel
+import com.example.snake.viewmodel.Pantalla
 
 /**
  * Única Activity de la app (arquitectura single-Activity con Compose).
@@ -34,7 +34,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            SnakeGameTheme {
+            SnakeTheme {
                 val uiState by viewModel.uiState.collectAsState()
 
                 AppNavigation(

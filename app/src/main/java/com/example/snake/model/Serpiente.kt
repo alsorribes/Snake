@@ -1,4 +1,4 @@
-package com.example.snakegame.model
+package com.example.snake.model
 
 /**
  * Representa la serpiente del juego.

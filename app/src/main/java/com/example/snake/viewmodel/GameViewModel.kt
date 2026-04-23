@@ -1,13 +1,13 @@
-package com.example.snakegame.viewmodel
+package com.example.snake.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.snakegame.model.ConfiguracionPartida
-import com.example.snakegame.model.Direccion
-import com.example.snakegame.model.EstadoJuego
-import com.example.snakegame.model.LogPartida
-import com.example.snakegame.model.Partida
-import com.example.snakegame.model.ResultadoPartida
+import com.example.snake.model.ConfiguracionPartida
+import com.example.snake.model.Direccion
+import com.example.snake.model.EstadoJuego
+import com.example.snake.model.LogPartida
+import com.example.snake.model.Partida
+import com.example.snake.model.ResultadoPartida
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
