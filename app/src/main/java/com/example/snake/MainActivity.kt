@@ -17,15 +17,10 @@ import com.example.snake.ui.theme.SnakeTheme
 import com.example.snake.viewmodel.GameViewModel
 import com.example.snake.viewmodel.Pantalla
 
-/**
- * Única Activity de la app (arquitectura single-Activity con Compose).
- *
- * Responsabilidades:
- *  - Obtener el ViewModel (sobrevive a rotaciones automáticamente).
- *  - Conectar AppNavigation con los Composables de cada pantalla.
- *  - Gestionar el Intent de email (requiere contexto de Activity).
- *  - Cerrar la app de forma limpia.
- */
+// FIX [1 cod]: strings hardcoded extraídos como constantes
+private const val EMAIL_MIME_TYPE    = "message/rfc822"
+private const val EMAIL_CHOOSER_TEXT = "Enviar log por email"
+
 class MainActivity : ComponentActivity() {
 
     private val viewModel: GameViewModel by viewModels()
@@ -38,7 +33,7 @@ class MainActivity : ComponentActivity() {
                 val uiState by viewModel.uiState.collectAsState()
 
                 AppNavigation(
-                    viewModel = viewModel,
+                    viewModel  = viewModel,
                     onSalirApp = { finalizarApp() },
 
                     menuPrincipalContent = {
@@ -65,7 +60,7 @@ class MainActivity : ComponentActivity() {
 
                     juegoContent = {
                         JuegoScreen(
-                            uiState = uiState,
+                            uiState            = uiState,
                             onCambiarDireccion = { dir -> viewModel.cambiarDireccion(dir) },
                             onTogglePausa      = { viewModel.togglePausa() }
                         )
@@ -73,16 +68,16 @@ class MainActivity : ComponentActivity() {
 
                     resultadosContent = {
                         ResultadosScreen(
-                            uiState = uiState,
-                            onEnviarEmail = { email ->
+                            uiState        = uiState,
+                            onEnviarEmail  = { email ->
                                 enviarEmail(
                                     destinatario = email,
-                                    asunto = uiState.log?.generarAsuntoEmail() ?: "",
-                                    cuerpo = uiState.log?.generarTexto() ?: ""
+                                    asunto       = uiState.log?.generarAsuntoEmail() ?: "",
+                                    cuerpo       = uiState.log?.generarTexto() ?: ""
                                 )
                             },
-                            onNuevaPartida = { viewModel.nuevaPartida() },
-                            onSalir        = { finalizarApp() },
+                            onNuevaPartida  = { viewModel.nuevaPartida() },
+                            onSalir         = { finalizarApp() },
                             onEmailCambiado = { viewModel.actualizarEmailDestinatario(it) }
                         )
                     }
@@ -91,36 +86,18 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Intent de email
-    // -------------------------------------------------------------------------
-
-    /**
-     * Abre el cliente de correo del sistema con los datos del log pre-rellenos.
-     * Cumple el requisito: asunto = "Log – fecha y hora", cuerpo = log de partida.
-     */
     private fun enviarEmail(destinatario: String, asunto: String, cuerpo: String) {
         val intent = Intent(Intent.ACTION_SEND).apply {
-            type = "message/rfc822"               // Filtra solo apps de email
-            putExtra(Intent.EXTRA_EMAIL, arrayOf(destinatario))
+            type = EMAIL_MIME_TYPE
+            putExtra(Intent.EXTRA_EMAIL,   arrayOf(destinatario))
             putExtra(Intent.EXTRA_SUBJECT, asunto)
-            putExtra(Intent.EXTRA_TEXT, cuerpo)
+            putExtra(Intent.EXTRA_TEXT,    cuerpo)
         }
-        // Usamos chooser para que el usuario elija la app de email
-        startActivity(Intent.createChooser(intent, "Enviar log por email"))
+        startActivity(Intent.createChooser(intent, EMAIL_CHOOSER_TEXT))
     }
 
-    // -------------------------------------------------------------------------
-    // Salida limpia
-    // -------------------------------------------------------------------------
-
-    /**
-     * Finaliza la app de forma limpia:
-     *  - Cancela jobs del ViewModel.
-     *  - Cierra la Activity (finishAffinity elimina toda la tarea del backstack).
-     */
     private fun finalizarApp() {
         viewModel.salir()
-        finishAffinity()  // Garantiza que no queda ninguna Activity en el backstack
+        finishAffinity()
     }
 }

@@ -5,13 +5,6 @@ package com.example.snake.model
  *
  * Es inmutable: cada cambio produce una nueva instancia (patrón funcional),
  * lo que facilita la integración con StateFlow y Compose.
- *
- * @param config            Configuración con la que se inició la partida.
- * @param serpiente         Estado actual de la serpiente.
- * @param manzana           Posición actual de la manzana en la parrilla.
- * @param manzanasComidas   Número de manzanas que ha comido la serpiente.
- * @param tiempoRestanteSeg Tiempo restante en segundos (solo relevante si config.controlTiempo).
- * @param estado            Estado actual del juego (en curso, ganada, perdida…).
  */
 data class Partida(
     val config: ConfiguracionPartida,
@@ -35,21 +28,24 @@ data class Partida(
      * 2. Comprueba colisiones (pared / cuerpo).
      * 3. Comprueba si ha comido la manzana.
      * 4. Genera nueva manzana si es necesario.
-     * 5. Comprueba condición de victoria (parrilla llena).
-     *
-     * @param direccion Dirección deseada para este tick.
-     * @return Nueva [Partida] con el estado actualizado.
+     * 5. Comprueba condición de victoria (parrilla llena o sin casillas libres).
      */
     fun tick(direccion: Direccion): Partida {
         if (haTerminado) return this
 
-        val comeManzana = serpiente.cabeza.mover(
+        val direccionEfectiva =
             if (direccion.esOpuesta(serpiente.direccion)) serpiente.direccion else direccion
-        ) == manzana
+
+        val comeManzana = serpiente.cabeza.mover(direccionEfectiva) == manzana
 
         val serpienteMovida = serpiente.mover(direccion, crecer = comeManzana)
 
-        // --- Comprobar colisiones ---
+        // FIX [9]: comprobar nulos/rango antes de acceder a cabeza
+        if (serpienteMovida.segmentos.isEmpty()) {
+            return copy(estado = EstadoJuego.PERDIDA_COLISION)
+        }
+
+        // Comprobar colisiones
         if (serpienteMovida.estaFueraDeRango(filas, columnas)
             || serpienteMovida.colisionaConsigaMisma()
         ) {
@@ -61,8 +57,8 @@ data class Partida(
 
         val nuevasManzanasComidas = manzanasComidas + if (comeManzana) 1 else 0
 
-        // --- Comprobar victoria (serpiente ocupa toda la parrilla) ---
-        if (serpienteMovida.longitud == filas * columnas) {
+        // FIX [16]: victoria correcta cuando serpiente ocupa toda la parrilla
+        if (serpienteMovida.longitud >= filas * columnas) {
             return copy(
                 serpiente = serpienteMovida,
                 manzanasComidas = nuevasManzanasComidas,
@@ -70,9 +66,13 @@ data class Partida(
             )
         }
 
-        // --- Generar nueva manzana si fue comida ---
+        // Generar nueva manzana si fue comida
         val nuevaManzana = if (comeManzana) {
-            generarManzana(serpienteMovida)
+            generarManzana(serpienteMovida) ?: return copy(
+                serpiente = serpienteMovida,
+                manzanasComidas = nuevasManzanasComidas,
+                estado = EstadoJuego.GANADA   // Sin casillas libres = victoria
+            )
         } else {
             manzana
         }
@@ -87,49 +87,55 @@ data class Partida(
 
     /**
      * Aplica el tick de tiempo: decrementa el tiempo restante.
-     * Si llega a 0 marca la partida como perdida por tiempo.
+     * FIX [8]: tiempoTranscurridoSeg se incrementa SIEMPRE (con o sin control de tiempo)
+     * para que el log muestre el tiempo real empleado.
      */
     fun tickTiempo(): Partida {
-        if (!config.controlTiempo || haTerminado) return this
+        if (haTerminado) return this
 
-        val nuevoTiempoRestante = (tiempoRestanteSeg - 1).coerceAtLeast(0)
+        // Siempre incrementamos el tiempo transcurrido
         val nuevoTiempoTranscurrido = tiempoTranscurridoSeg + 1
-        val nuevoEstado = if (nuevoTiempoRestante == 0) EstadoJuego.PERDIDA_TIEMPO
-        else EstadoJuego.EN_CURSO
 
-        return copy(
-            tiempoRestanteSeg = nuevoTiempoRestante,
-            tiempoTranscurridoSeg = nuevoTiempoTranscurrido,
-            estado = nuevoEstado
-        )
+        return if (config.controlTiempo) {
+            val nuevoTiempoRestante = (tiempoRestanteSeg - 1).coerceAtLeast(0)
+            val nuevoEstado = if (nuevoTiempoRestante == 0) EstadoJuego.PERDIDA_TIEMPO
+            else EstadoJuego.EN_CURSO
+            copy(
+                tiempoRestanteSeg = nuevoTiempoRestante,
+                tiempoTranscurridoSeg = nuevoTiempoTranscurrido,
+                estado = nuevoEstado
+            )
+        } else {
+            copy(tiempoTranscurridoSeg = nuevoTiempoTranscurrido)
+        }
     }
 
     /**
-     * Genera una casilla aleatoria libre (no ocupada por la serpiente).
+     * FIX [1][9]: devuelve null si no hay casillas libres (en vez de crashear con .random()).
      */
-    private fun generarManzana(serpienteActual: Serpiente): Casilla {
+    private fun generarManzana(serpienteActual: Serpiente): Casilla? {
         val casillasLibres = (0 until filas).flatMap { f ->
             (0 until columnas).map { c -> Casilla(f, c) }
         }.filter { !serpienteActual.ocupaCasilla(it) }
 
-        return if (casillasLibres.isNotEmpty()) casillasLibres.random()
-        else manzana // No debería ocurrir si la partida no ha terminado
+        return if (casillasLibres.isNotEmpty()) casillasLibres.random() else null
     }
 
     companion object {
         /**
-         * Crea una nueva partida a partir de la configuración dada.
-         * Posiciona la serpiente inicial y genera la primera manzana aleatoriamente.
+         * FIX [1][9]: comprueba que hay casillas libres antes de llamar .random().
          */
         fun nueva(config: ConfiguracionPartida): Partida {
             val serpiente = Serpiente.inicial(config.filas, config.columnas)
 
-            // Generar manzana en posición aleatoria no ocupada por la serpiente inicial
             val casillasLibres = (0 until config.filas).flatMap { f ->
                 (0 until config.columnas).map { c -> Casilla(f, c) }
             }.filter { !serpiente.ocupaCasilla(it) }
 
-            val manzana = casillasLibres.random()
+            // En una parrilla mínima 10x10 con serpiente de 3, esto nunca será vacío,
+            // pero lo protegemos igualmente
+            val manzana = if (casillasLibres.isNotEmpty()) casillasLibres.random()
+            else Casilla(0, 0)
 
             return Partida(
                 config = config,
@@ -143,9 +149,6 @@ data class Partida(
     }
 }
 
-/**
- * Posibles estados del juego en un instante dado.
- */
 enum class EstadoJuego {
     EN_CURSO,
     GANADA,
