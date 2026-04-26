@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -21,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -30,20 +32,17 @@ import com.example.snake.model.Partida
 import com.example.snake.model.Serpiente
 import com.example.snake.viewmodel.GameUiState
 
-// ─── Colores del juego ───────────────────────────────────────────────────────
-private val ColorFondoTablero  = Color(0xFF101820)
-private val ColorCuadricula    = Color(0xFF2A3B47)
-private val ColorCabeza        = Color(0xFF4CAF50)
-private val ColorCuerpo        = Color(0xFF81C784)
-private val ColorManzana       = Color(0xFFE53935)
-// FIX [11]: colores explícitos para el tiempo según el enunciado
-private val ColorTiempoSinControl = Color(0xFF2196F3)  // Azul
-private val ColorTiempoConControl = Color(0xFFF44336)  // Rojo
+private val ColorFondoTablero     = Color(0xFF101820)
+private val ColorCuadricula       = Color(0xFF2A3B47)
+private val ColorCabeza           = Color(0xFF4CAF50)
+private val ColorCuerpo           = Color(0xFF81C784)
+private val ColorManzana          = Color(0xFFE53935)
+// FIX [E][K]: colores del tiempo según enunciado
+private val ColorTiempoSinControl = Color(0xFF2196F3)  // Azul  (tiempo transcurrido)
+private val ColorTiempoConControl = Color(0xFFF44336)  // Rojo  (cuenta atrás)
 
 // =============================================================================
-// COMPOSABLE STATEFUL: JuegoScreen
-// Recibe el estado completo y las lambdas de acción.
-// Es el único punto que conoce GameUiState.
+// STATEFUL: JuegoScreen — único punto que conoce GameUiState
 // =============================================================================
 @Composable
 fun JuegoScreen(
@@ -52,30 +51,32 @@ fun JuegoScreen(
     onTogglePausa: () -> Unit
 ) {
     val partida = uiState.partida
-
     if (partida == null) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("No hay partida en curso", style = MaterialTheme.typography.bodyLarge)
+            Text("No hay partida en curso", style = MaterialTheme.typography.bodyLarge,
+                color = Color.White)
         }
         return
     }
 
-    // Delega en el composable stateless pasando solo los datos necesarios
-    JuegoContenido(
-        partida          = partida,
-        enPausa          = uiState.enPausa,
-        onCambiarDireccion = onCambiarDireccion,
-        onTogglePausa    = onTogglePausa
-    )
+    // FIX [C]: detectar orientación y usar layout diferente
+    val esLandscape = LocalConfiguration.current.screenWidthDp >
+            LocalConfiguration.current.screenHeightDp
+
+    if (esLandscape) {
+        JuegoLandscape(partida = partida, enPausa = uiState.enPausa,
+            onCambiarDireccion = onCambiarDireccion, onTogglePausa = onTogglePausa)
+    } else {
+        JuegoPortrait(partida = partida, enPausa = uiState.enPausa,
+            onCambiarDireccion = onCambiarDireccion, onTogglePausa = onTogglePausa)
+    }
 }
 
 // =============================================================================
-// COMPOSABLE STATELESS: JuegoContenido
-// No conoce GameUiState. Recibe exactamente lo que necesita renderizar.
-// Facilita la preview y el testing.
+// STATELESS: JuegoPortrait — layout vertical normal
 // =============================================================================
 @Composable
-private fun JuegoContenido(
+private fun JuegoPortrait(
     partida: Partida,
     enPausa: Boolean,
     onCambiarDireccion: (Direccion) -> Unit,
@@ -84,63 +85,105 @@ private fun JuegoContenido(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF1B1B2F))
+            .background(ColorFondoTablero)
             .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // ── Cabecera con info de partida ──────────────────────────────────
         InfoPartida(
-            alias          = partida.config.alias,
+            alias           = partida.config.alias,
             manzanasComidas = partida.manzanasComidas,
-            longitud       = partida.serpiente.longitud,
-            tiempoRestante = partida.tiempoRestanteSeg,
-            controlTiempo  = partida.config.controlTiempo,
-            enPausa        = enPausa
+            longitud        = partida.serpiente.longitud,
+            tiempoMostrar   = partida.tiempoParaMostrar,   // FIX [E][K]
+            controlTiempo   = partida.config.controlTiempo,
+            enPausa         = enPausa
         )
 
-        // ── Tablero del juego (stateless) ─────────────────────────────────
         TableroJuego(
-            filas      = partida.filas,
-            columnas   = partida.columnas,
-            serpiente  = partida.serpiente,
-            manzana    = partida.manzana,
-            modifier   = Modifier
+            filas     = partida.filas,
+            columnas  = partida.columnas,
+            serpiente = partida.serpiente,
+            manzana   = partida.manzana,
+            modifier  = Modifier
                 .fillMaxWidth()
                 .aspectRatio(partida.columnas.toFloat() / partida.filas.toFloat())
         )
 
-        // ── Botón pausa ───────────────────────────────────────────────────
-        Button(
-            onClick = onTogglePausa,
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = if (enPausa) ColorCabeza else Color(0xFF37474F)
-            )
-        ) {
-            Text(if (enPausa) "▶  REANUDAR" else "⏸  PAUSAR", fontWeight = FontWeight.SemiBold)
-        }
+        BotonPausa(enPausa = enPausa, onTogglePausa = onTogglePausa)
 
-        // ── Controles de dirección ────────────────────────────────────────
         ControlesDireccion(onCambiarDireccion = onCambiarDireccion)
     }
 }
 
 // =============================================================================
-// COMPOSABLE STATELESS: InfoPartida
-// Muestra alias, manzanas, longitud y tiempo con el color correcto.
-// FIX [11]: tiempo en azul (sin control) o rojo (con control), según enunciado.
+// STATELESS: JuegoLandscape — FIX [C]: layout horizontal
+// Tablero a la izquierda, controles + info a la derecha
+// =============================================================================
+@Composable
+private fun JuegoLandscape(
+    partida: Partida,
+    enPausa: Boolean,
+    onCambiarDireccion: (Direccion) -> Unit,
+    onTogglePausa: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(ColorFondoTablero)
+            .padding(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // Tablero ocupa el lado izquierdo con aspect ratio correcto
+        TableroJuego(
+            filas     = partida.filas,
+            columnas  = partida.columnas,
+            serpiente = partida.serpiente,
+            manzana   = partida.manzana,
+            modifier  = Modifier
+                .fillMaxHeight()
+                .aspectRatio(partida.columnas.toFloat() / partida.filas.toFloat())
+        )
+
+        // Panel derecho: info + pausa + controles
+        Column(
+            modifier = Modifier
+                .fillMaxHeight()
+                .weight(1f),
+            verticalArrangement = Arrangement.SpaceEvenly,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            InfoPartida(
+                alias           = partida.config.alias,
+                manzanasComidas = partida.manzanasComidas,
+                longitud        = partida.serpiente.longitud,
+                tiempoMostrar   = partida.tiempoParaMostrar,
+                controlTiempo   = partida.config.controlTiempo,
+                enPausa         = enPausa
+            )
+
+            BotonPausa(enPausa = enPausa, onTogglePausa = onTogglePausa,
+                modifier = Modifier.fillMaxWidth())
+
+            ControlesDireccion(onCambiarDireccion = onCambiarDireccion)
+        }
+    }
+}
+
+// =============================================================================
+// STATELESS: InfoPartida
+// FIX [E][K]: recibe tiempoMostrar ya calculado desde Partida.tiempoParaMostrar
+// (tiempo restante con control, tiempo transcurrido sin control)
 // =============================================================================
 @Composable
 private fun InfoPartida(
     alias: String,
     manzanasComidas: Int,
     longitud: Int,
-    tiempoRestante: Int,
+    tiempoMostrar: Int,
     controlTiempo: Boolean,
     enPausa: Boolean
 ) {
-    // FIX [11]: color del tiempo según el enunciado
     val colorTiempo = if (controlTiempo) ColorTiempoConControl else ColorTiempoSinControl
+    val labelTiempo = if (controlTiempo) "⏱ ${tiempoMostrar}s restantes" else "⏱ ${tiempoMostrar}s"
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -148,35 +191,20 @@ private fun InfoPartida(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column {
-            Text(
-                text = "👤 $alias",
-                color = Color.White,
-                fontSize = 13.sp
-            )
-            Text(
-                text = "🍎 $manzanasComidas  •  🐍 $longitud seg.",
-                color = Color.White.copy(alpha = 0.7f),
-                fontSize = 12.sp
-            )
+            Text("👤 $alias", color = Color.White, fontSize = 13.sp)
+            Text("🍎 $manzanasComidas  •  🐍 $longitud seg.",
+                color = Color.White.copy(alpha = 0.7f), fontSize = 12.sp)
         }
         Column(horizontalAlignment = Alignment.End) {
-            Text(
-                text = if (controlTiempo) "⏱ ${tiempoRestante}s" else "⏱ ${tiempoRestante}s",
-                color = colorTiempo,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
-            if (enPausa) {
-                Text("PAUSADO", color = Color.Yellow, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-            }
+            Text(labelTiempo, color = colorTiempo, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            if (enPausa) Text("PAUSADO", color = Color.Yellow, fontSize = 11.sp,
+                fontWeight = FontWeight.Bold)
         }
     }
 }
 
 // =============================================================================
-// COMPOSABLE STATELESS: TableroJuego
-// Dibuja el tablero con Canvas. No conoce nada del estado de la app.
-// FIX [10]: separado correctamente como stateless según criterio de corrección.
+// STATELESS: TableroJuego
 // =============================================================================
 @Composable
 fun TableroJuego(
@@ -190,25 +218,17 @@ fun TableroJuego(
         val cellW = size.width  / columnas
         val cellH = size.height / filas
 
-        // Fondo
         drawRect(color = ColorFondoTablero, size = size)
 
-        // Cuadrícula
-        for (f in 0..filas) {
-            drawLine(ColorCuadricula, Offset(0f, f * cellH), Offset(size.width, f * cellH), 1f)
-        }
-        for (c in 0..columnas) {
-            drawLine(ColorCuadricula, Offset(c * cellW, 0f), Offset(c * cellW, size.height), 1f)
-        }
+        for (f in 0..filas)   drawLine(ColorCuadricula, Offset(0f, f*cellH), Offset(size.width, f*cellH), 1f)
+        for (c in 0..columnas) drawLine(ColorCuadricula, Offset(c*cellW, 0f), Offset(c*cellW, size.height), 1f)
 
-        // Manzana
         drawRect(
             color   = ColorManzana,
             topLeft = Offset(manzana.columna * cellW + 2f, manzana.fila * cellH + 2f),
             size    = Size(cellW - 4f, cellH - 4f)
         )
 
-        // Serpiente
         serpiente.segmentos.forEachIndexed { index, casilla ->
             val color  = if (index == 0) ColorCabeza else ColorCuerpo
             val margin = if (index == 0) 1f else 2f
@@ -222,44 +242,47 @@ fun TableroJuego(
 }
 
 // =============================================================================
-// COMPOSABLE STATELESS: ControlesDireccion
-// Botonera de dirección desacoplada del resto.
+// STATELESS: BotonPausa
 // =============================================================================
 @Composable
-private fun ControlesDireccion(
-    onCambiarDireccion: (Direccion) -> Unit
+private fun BotonPausa(
+    enPausa: Boolean,
+    onTogglePausa: () -> Unit,
+    modifier: Modifier = Modifier.fillMaxWidth()
 ) {
-    val colorBoton = Color(0xFF2E7D32)
-
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+    Button(
+        onClick = onTogglePausa,
+        modifier = modifier,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if (enPausa) ColorCabeza else Color(0xFF37474F)
+        )
     ) {
-        // Arriba
-        BotonDireccion("▲", Direccion.ARRIBA, colorBoton, onCambiarDireccion,
-            Modifier.size(64.dp))
-
-        // Izquierda / Derecha
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            BotonDireccion("◀", Direccion.IZQUIERDA, colorBoton, onCambiarDireccion,
-                Modifier.size(64.dp))
-            Box(Modifier.size(64.dp))  // espacio central
-            BotonDireccion("▶", Direccion.DERECHA, colorBoton, onCambiarDireccion,
-                Modifier.size(64.dp))
-        }
-
-        // Abajo
-        BotonDireccion("▼", Direccion.ABAJO, colorBoton, onCambiarDireccion,
-            Modifier.size(64.dp))
+        Text(if (enPausa) "▶  REANUDAR" else "⏸  PAUSAR", fontWeight = FontWeight.SemiBold)
     }
 }
 
 // =============================================================================
-// COMPOSABLE STATELESS: BotonDireccion
+// STATELESS: ControlesDireccion
+// =============================================================================
+@Composable
+private fun ControlesDireccion(onCambiarDireccion: (Direccion) -> Unit) {
+    val colorBoton = Color(0xFF2E7D32)
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        BotonDireccion("▲", Direccion.ARRIBA,    colorBoton, onCambiarDireccion, Modifier.size(56.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+            BotonDireccion("◀", Direccion.IZQUIERDA, colorBoton, onCambiarDireccion, Modifier.size(56.dp))
+            Box(Modifier.size(56.dp))
+            BotonDireccion("▶", Direccion.DERECHA,   colorBoton, onCambiarDireccion, Modifier.size(56.dp))
+        }
+        BotonDireccion("▼", Direccion.ABAJO,    colorBoton, onCambiarDireccion, Modifier.size(56.dp))
+    }
+}
+
+// =============================================================================
+// STATELESS: BotonDireccion
 // =============================================================================
 @Composable
 private fun BotonDireccion(
@@ -269,11 +292,8 @@ private fun BotonDireccion(
     onClick: (Direccion) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Button(
-        onClick = { onClick(direccion) },
-        modifier = modifier,
-        colors = ButtonDefaults.buttonColors(containerColor = color)
-    ) {
-        Text(etiqueta, fontSize = 20.sp, color = Color.White)
+    Button(onClick = { onClick(direccion) }, modifier = modifier,
+        colors = ButtonDefaults.buttonColors(containerColor = color)) {
+        Text(etiqueta, fontSize = 18.sp, color = Color.White)
     }
 }

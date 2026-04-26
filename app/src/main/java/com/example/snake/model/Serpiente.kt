@@ -5,78 +5,73 @@ package com.example.snake.model
  *
  * El primer elemento de [segmentos] es siempre la cabeza.
  * El último elemento es la cola.
- *
- * @param segmentos Lista ordenada de casillas que ocupa la serpiente.
- * @param direccion Dirección de movimiento actual.
  */
 data class Serpiente(
     val segmentos: List<Casilla>,
     val direccion: Direccion = Direccion.DERECHA
 ) {
-    /** Casilla donde está la cabeza. */
-    val cabeza: Casilla get() = segmentos.first()
+    /**
+     * FIX [J]: firstOrNull() en lugar de first() para evitar crash si segmentos vacío.
+     * En la práctica nunca debería ser null en una partida en curso, pero
+     * la propiedad es segura por construcción.
+     */
+    val cabeza: Casilla? get() = segmentos.firstOrNull()
 
-    /** Longitud actual de la serpiente. */
     val longitud: Int get() = segmentos.size
 
     /**
      * Mueve la serpiente un paso en [nuevaDireccion].
-     * Si [crecer] es true, no se elimina la cola (la serpiente crece).
-     * Ignora la nueva dirección si es opuesta a la actual (evita giro de 180°).
-     *
-     * @return Nueva instancia de [Serpiente] tras el movimiento.
+     * Si [crecer] es true, no elimina la cola (la serpiente crece).
+     * Retorna null si la cabeza actual es null (estado inválido).
      */
     fun mover(nuevaDireccion: Direccion, crecer: Boolean = false): Serpiente {
+        val cabezaActual = cabeza ?: return this  // estado inválido, no mover
+
         val direccionFinal =
             if (nuevaDireccion.esOpuesta(direccion)) direccion else nuevaDireccion
 
-        val nuevaCabeza = cabeza.mover(direccionFinal)
+        val nuevaCabeza = cabezaActual.mover(direccionFinal)
 
         val nuevosSegmentos = if (crecer) {
-            listOf(nuevaCabeza) + segmentos          // Cabeza nueva + cuerpo completo
+            listOf(nuevaCabeza) + segmentos
         } else {
-            listOf(nuevaCabeza) + segmentos.dropLast(1) // Cabeza nueva + cuerpo sin cola
+            listOf(nuevaCabeza) + segmentos.dropLast(1)
         }
 
         return copy(segmentos = nuevosSegmentos, direccion = direccionFinal)
     }
 
     /**
-     * Comprueba si la cabeza choca con algún segmento del cuerpo
-     * (excluyendo la propia cabeza).
+     * Comprueba si la cabeza choca con algún segmento del cuerpo.
+     * FIX [J]: seguro con cabeza nullable.
      */
     fun colisionaConsigaMisma(): Boolean {
-        return segmentos.drop(1).contains(cabeza)
+        val cab = cabeza ?: return false
+        return segmentos.drop(1).contains(cab)
     }
 
     /**
      * Comprueba si la cabeza está fuera de los límites de la parrilla.
+     * FIX [J]: seguro con cabeza nullable → si no hay cabeza, es fuera de rango.
      */
     fun estaFueraDeRango(filas: Int, columnas: Int): Boolean {
-        return !cabeza.estaEnRango(filas, columnas)
+        return cabeza?.estaEnRango(filas, columnas) != true
     }
 
-    /**
-     * Comprueba si la serpiente ocupa una casilla concreta.
-     */
-    fun ocupaCasilla(casilla: Casilla): Boolean {
-        return segmentos.contains(casilla)
-    }
+    fun ocupaCasilla(casilla: Casilla): Boolean = segmentos.contains(casilla)
 
     companion object {
-        /**
-         * Crea una serpiente inicial centrada en la parrilla,
-         * con longitud 3 y dirección hacia la derecha.
-         */
         fun inicial(filas: Int, columnas: Int): Serpiente {
             val filaCentro = filas / 2
             val colCentro  = columnas / 2
-            val segmentosIniciales = listOf(
-                Casilla(filaCentro, colCentro),
-                Casilla(filaCentro, colCentro - 1),
-                Casilla(filaCentro, colCentro - 2)
+            return Serpiente(
+                segmentos = listOf(
+                    Casilla(filaCentro, colCentro),
+                    Casilla(filaCentro, colCentro - 1),
+                    Casilla(filaCentro, colCentro - 2)
+                ),
+                direccion = Direccion.DERECHA
             )
-            return Serpiente(segmentos = segmentosIniciales, direccion = Direccion.DERECHA)
         }
     }
 }

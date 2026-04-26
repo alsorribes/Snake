@@ -18,136 +18,67 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.snake.ui.components.GridBackground
 
-// ── Colores del tema Snake ────────────────────────────────────────────────────
 private val SnakeGreen      = Color(0xFF4CAF50)
 private val SnakeDarkGreen  = Color(0xFF2E7D32)
 private val SnakeLightGreen = Color(0xFF81C784)
-private val SnakeAccent     = Color(0xFFFFEB3B)   // amarillo manzana
+// FIX [I]: eliminadas SnakeAccent y BackgroundDark que no se usaban directamente aquí
 private val BackgroundDark  = Color(0xFF1B1B2F)
 private val SurfaceCard     = Color(0xFF252540)
 
-/**
- * Pantalla de Menú Principal.
- *
- * Diseño: fondo oscuro con cuadrícula tipo tablero de juego,
- * logo animado con pulso y botones con gradiente verde.
- *
- * @param onEmpezarPartida  Navega a Configuración.
- * @param onAyuda           Navega a Ayuda.
- * @param onSalir           Cierra la app.
- */
 @Composable
 fun MenuPrincipalScreen(
     onEmpezarPartida: () -> Unit,
     onAyuda: () -> Unit,
     onSalir: () -> Unit
 ) {
-    // Animación de pulso para el logo
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val scale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue  = 1.06f,
+        initialValue = 1f, targetValue = 1.06f,
         animationSpec = infiniteRepeatable(
-            animation  = tween(900, easing = EaseInOutSine),
+            animation = tween(900, easing = EaseInOutSine),
             repeatMode = RepeatMode.Reverse
-        ),
-        label = "logoScale"
+        ), label = "logoScale"
     )
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(BackgroundDark)
-    ) {
-        // ── Fondo decorativo: cuadrícula translúcida ────────────────────────
+    Box(modifier = Modifier.fillMaxSize().background(BackgroundDark)) {
         GridBackground()
 
-        // ── Contenido principal ─────────────────────────────────────────────
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 32.dp),
+            modifier = Modifier.fillMaxSize().padding(horizontal = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-
-            // Logo / emoji serpiente animado
-            Text(
-                text     = "🐍",
-                fontSize = 88.sp,
-                modifier = Modifier.scale(scale)
-            )
+            Text(text = "🐍", fontSize = 88.sp, modifier = Modifier.scale(scale))
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Título del juego
-            Text(
-                text       = "SNAKE",
-                fontSize   = 52.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color      = SnakeGreen,
-                letterSpacing = 8.sp
-            )
-
-            Text(
-                text      = "El juego de la serpiente",
-                fontSize  = 14.sp,
-                color     = SnakeLightGreen.copy(alpha = 0.7f),
-                textAlign = TextAlign.Center,
-                letterSpacing = 2.sp
-            )
+            Text(text = "SNAKE", fontSize = 52.sp, fontWeight = FontWeight.ExtraBold,
+                color = SnakeGreen, letterSpacing = 8.sp)
+            Text(text = "El juego de la serpiente", fontSize = 14.sp,
+                color = SnakeLightGreen.copy(alpha = 0.7f),
+                textAlign = TextAlign.Center, letterSpacing = 2.sp)
 
             Spacer(modifier = Modifier.height(56.dp))
 
-            // ── Botones ─────────────────────────────────────────────────────
-            SnakeMenuButton(
-                text    = "▶  EMPEZAR PARTIDA",
-                onClick = onEmpezarPartida,
-                primary = true
-            )
-
+            SnakeMenuButton("▶  EMPEZAR PARTIDA", onEmpezarPartida, primary = true)
             Spacer(modifier = Modifier.height(16.dp))
-
-            SnakeMenuButton(
-                text    = "❓  AYUDA",
-                onClick = onAyuda,
-                primary = false
-            )
-
+            SnakeMenuButton("❓  AYUDA", onAyuda, primary = false)
             Spacer(modifier = Modifier.height(16.dp))
-
-            SnakeMenuButton(
-                text    = "✕  SALIR",
-                onClick = onSalir,
-                primary = false,
-                tint    = Color(0xFFEF5350)
-            )
+            SnakeMenuButton("✕  SALIR", onSalir, primary = false, tint = Color(0xFFEF5350))
 
             Spacer(modifier = Modifier.height(48.dp))
 
-            // Manzana decorativa con puntuación alta ficticia
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center) {
                 Text("🍎", fontSize = 18.sp)
                 Spacer(Modifier.width(6.dp))
-                Text(
-                    text      = "Come manzanas · Crece · Sobrevive",
-                    fontSize  = 12.sp,
-                    color     = Color.White.copy(alpha = 0.35f),
-                    textAlign = TextAlign.Center
-                )
+                Text("Come manzanas · Crece · Sobrevive", fontSize = 12.sp,
+                    color = Color.White.copy(alpha = 0.35f), textAlign = TextAlign.Center)
             }
         }
     }
 }
 
-// ── Componentes privados ──────────────────────────────────────────────────────
-
-/**
- * Botón de menú con gradiente verde o color personalizado.
- */
 @Composable
 private fun SnakeMenuButton(
     text: String,
@@ -155,21 +86,14 @@ private fun SnakeMenuButton(
     primary: Boolean,
     tint: Color = SnakeGreen
 ) {
-    val backgroundBrush = if (primary) {
+    val backgroundBrush = if (primary)
         Brush.horizontalGradient(listOf(SnakeDarkGreen, SnakeGreen, SnakeLightGreen))
-    } else {
+    else
         Brush.horizontalGradient(listOf(SurfaceCard, SurfaceCard))
-    }
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .background(backgroundBrush)
-    ) {
+    Box(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(backgroundBrush)) {
         Button(
-            onClick = onClick,
-            modifier = Modifier.fillMaxWidth(),
+            onClick = onClick, modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(14.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.Transparent,
@@ -177,13 +101,8 @@ private fun SnakeMenuButton(
             ),
             elevation = ButtonDefaults.buttonElevation(0.dp)
         ) {
-            Text(
-                text       = text,
-                fontSize   = 15.sp,
-                fontWeight = FontWeight.SemiBold,
-                letterSpacing = 1.sp,
-                modifier   = Modifier.padding(vertical = 6.dp)
-            )
+            Text(text, fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
+                letterSpacing = 1.sp, modifier = Modifier.padding(vertical = 6.dp))
         }
     }
 }

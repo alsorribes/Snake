@@ -16,10 +16,16 @@
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Snake">
+            android:theme="@style/Theme.Snake"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden">
+            <!--
+                FIX [D]: configChanges evita que Android destruya y recree la Activity
+                al rotar la pantalla. El ViewModel ya gestiona el estado del juego,
+                así que Compose simplemente recompone sin parpadeo ni pérdida de datos.
+                Cubre: rotación, cambio de tamaño, layout y teclado.
+            -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
