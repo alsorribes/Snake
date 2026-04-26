@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -54,7 +55,10 @@ fun JuegoScreen(
 ) {
     val partida = uiState.partida
     if (partida == null) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Box(
+            Modifier.fillMaxSize().safeDrawingPadding(),
+            contentAlignment = Alignment.Center
+        ) {
             Text("No hi ha partida en curs", style = MaterialTheme.typography.bodyLarge,
                 color = Color.White)
         }
@@ -64,7 +68,8 @@ fun JuegoScreen(
     val esLandscape = LocalConfiguration.current.screenWidthDp >
             LocalConfiguration.current.screenHeightDp
 
-    Box(Modifier.fillMaxSize()) {
+    // FIX [P3]: safeDrawingPadding en el contenedor raíz del juego
+    Box(Modifier.fillMaxSize().safeDrawingPadding()) {
         if (esLandscape) {
             JuegoLandscape(partida, uiState.enPausa, onCambiarDireccion, onTogglePausa)
         } else {
@@ -81,7 +86,6 @@ private fun GameOverOverlay(mensaje: String) {
         contentAlignment = Alignment.Center
     ) {
         Box(
-            // FIX [E4]: usar BackgroundDark de SnakeColors en lugar de Color(0xFF1B1B2F) hardcoded
             modifier = Modifier
                 .background(BackgroundDark, RoundedCornerShape(20.dp))
                 .padding(horizontal = 40.dp, vertical = 28.dp),
@@ -99,14 +103,18 @@ private fun JuegoPortrait(
     onCambiarDireccion: (Direccion) -> Unit, onTogglePausa: () -> Unit
 ) {
     Column(
-        modifier = Modifier.fillMaxSize().background(BoardBackground).padding(12.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(BoardBackground)
+            .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         InfoPartida(partida.config.alias, partida.manzanasComidas, partida.serpiente.longitud,
             partida.tiempoParaMostrar, partida.config.controlTiempo, enPausa)
         TableroJuego(partida.filas, partida.columnas, partida.serpiente, partida.manzana,
-            Modifier.fillMaxWidth().aspectRatio(partida.columnas.toFloat() / partida.filas.toFloat()))
+            Modifier.fillMaxWidth()
+                .aspectRatio(partida.columnas.toFloat() / partida.filas.toFloat()))
         BotonPausa(enPausa, onTogglePausa)
         ControlesDireccion(onCambiarDireccion, tamanoBoton = 72.dp)
     }
@@ -118,11 +126,15 @@ private fun JuegoLandscape(
     onCambiarDireccion: (Direccion) -> Unit, onTogglePausa: () -> Unit
 ) {
     Row(
-        modifier = Modifier.fillMaxSize().background(BoardBackground).padding(8.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(BoardBackground)
+            .padding(8.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         TableroJuego(partida.filas, partida.columnas, partida.serpiente, partida.manzana,
-            Modifier.fillMaxHeight().aspectRatio(partida.columnas.toFloat() / partida.filas.toFloat()))
+            Modifier.fillMaxHeight()
+                .aspectRatio(partida.columnas.toFloat() / partida.filas.toFloat()))
         Column(
             modifier = Modifier.fillMaxHeight().weight(1f),
             verticalArrangement = Arrangement.SpaceEvenly,
@@ -170,12 +182,14 @@ fun TableroJuego(
         drawRect(color = BoardBackground, size = size)
         for (f in 0..filas)    drawLine(BoardGrid, Offset(0f, f * cellH), Offset(size.width, f * cellH), 1f)
         for (c in 0..columnas) drawLine(BoardGrid, Offset(c * cellW, 0f), Offset(c * cellW, size.height), 1f)
-        drawRect(AppleRed, Offset(manzana.columna * cellW + 2f, manzana.fila * cellH + 2f),
+        drawRect(AppleRed,
+            Offset(manzana.columna * cellW + 2f, manzana.fila * cellH + 2f),
             Size(cellW - 4f, cellH - 4f))
         serpiente.segmentos.forEachIndexed { index, casilla ->
             val color  = if (index == 0) SnakeHead else SnakeBody
             val margin = if (index == 0) 1f else 2f
-            drawRect(color, Offset(casilla.columna * cellW + margin, casilla.fila * cellH + margin),
+            drawRect(color,
+                Offset(casilla.columna * cellW + margin, casilla.fila * cellH + margin),
                 Size(cellW - margin * 2, cellH - margin * 2))
         }
     }
@@ -195,8 +209,7 @@ private fun BotonPausa(
 
 @Composable
 private fun ControlesDireccion(
-    onCambiarDireccion: (Direccion) -> Unit,
-    tamanoBoton: Dp = 72.dp
+    onCambiarDireccion: (Direccion) -> Unit, tamanoBoton: Dp = 72.dp
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp)) {

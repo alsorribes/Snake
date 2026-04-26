@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -40,7 +41,6 @@ import com.example.snake.ui.theme.BtnError
 import com.example.snake.ui.theme.SnakeDarkGreen
 import com.example.snake.ui.theme.SnakeGreen
 import com.example.snake.ui.theme.SnakeLightGreen
-// FIX [E5]: eliminado import de SurfaceCard que no se usaba (generaba warning)
 import com.example.snake.viewmodel.GameUiState
 
 private val EMAIL_REGEX = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
@@ -57,7 +57,11 @@ fun ResultadosScreen(
 
     if (log == null) {
         Box(
-            modifier = Modifier.fillMaxSize().background(BackgroundDark),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(BackgroundDark)
+                // FIX [P4]: padding de insets del sistema
+                .safeDrawingPadding(),
             contentAlignment = Alignment.Center
         ) {
             Column(
@@ -66,9 +70,7 @@ fun ResultadosScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text("No hi ha resultats disponibles", color = Color.White, fontSize = 16.sp)
-                Button(
-                    onClick = onNuevaPartida,
-                    modifier = Modifier.fillMaxWidth(),
+                Button(onClick = onNuevaPartida, modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = SnakeDarkGreen)
                 ) { Text("← Nova partida") }
             }
@@ -88,7 +90,13 @@ fun ResultadosScreen(
         try { focusRequester.requestFocus() } catch (_: Exception) { }
     }
 
-    Box(modifier = Modifier.fillMaxSize().background(BackgroundDark)) {
+    // FIX [P4]: safeDrawingPadding en el contenedor raíz
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(BackgroundDark)
+            .safeDrawingPadding()
+    ) {
         GridBackground()
 
         Column(
@@ -98,7 +106,8 @@ fun ResultadosScreen(
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            Text("🏁  Resultats", fontSize = 26.sp, fontWeight = FontWeight.ExtraBold, color = SnakeGreen)
+            Text("🏁  Resultats", fontSize = 26.sp, fontWeight = FontWeight.ExtraBold,
+                color = SnakeGreen)
             Text("Resum de la partida", fontSize = 13.sp, color = Color.White.copy(alpha = 0.5f))
 
             EtiquetaResultado("📅  Dia i hora de finalització")
@@ -120,7 +129,9 @@ fun ResultadosScreen(
                 modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
                 singleLine = true,
                 isError = emailError != null,
-                supportingText = emailError?.let { { Text(it, color = BtnError, fontSize = 12.sp) } },
+                supportingText = emailError?.let {
+                    { Text(it, color = BtnError, fontSize = 12.sp) }
+                },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 colors = camposColores()
             )

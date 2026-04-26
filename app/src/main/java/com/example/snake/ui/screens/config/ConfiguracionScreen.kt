@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -37,7 +38,6 @@ import androidx.compose.ui.unit.sp
 import com.example.snake.model.ConfiguracionPartida
 import com.example.snake.model.TIEMPO_MAXIMO_DEFECTO_SEG
 import com.example.snake.model.TamanoParrilla
-// FIX [E1]: colores importados desde SnakeColors en lugar de redefinirlos localmente
 import com.example.snake.ui.theme.BackgroundDark
 import com.example.snake.ui.theme.BtnError
 import com.example.snake.ui.theme.SnakeDarkGreen
@@ -62,12 +62,16 @@ fun ConfiguracionScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(BackgroundDark)
+            // FIX [P2]: padding de insets del sistema para evitar solapamiento
+            .safeDrawingPadding()
             .verticalScroll(rememberScrollState())
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text("⚙️  Configuració", fontSize = 26.sp, fontWeight = FontWeight.ExtraBold, color = SnakeGreen)
-        Text("Ajusta els paràmetres de la teva partida", fontSize = 13.sp, color = Color.White.copy(alpha = 0.5f))
+        Text("⚙️  Configuració", fontSize = 26.sp, fontWeight = FontWeight.ExtraBold,
+            color = SnakeGreen)
+        Text("Ajusta els paràmetres de la teva partida", fontSize = 13.sp,
+            color = Color.White.copy(alpha = 0.5f))
 
         Spacer(Modifier.height(4.dp))
 

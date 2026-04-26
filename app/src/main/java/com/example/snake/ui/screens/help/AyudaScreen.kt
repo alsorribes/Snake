@@ -18,8 +18,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.snake.ui.components.GridBackground
-// FIX [E1]: colores importados desde SnakeColors en lugar de redefinirlos localmente
 import com.example.snake.ui.theme.BackgroundDark
+import com.example.snake.ui.theme.MiniBoardBackground
+import com.example.snake.ui.theme.MiniBoardEmptyCell
 import com.example.snake.ui.theme.SnakeDarkGreen
 import com.example.snake.ui.theme.SnakeGreen
 import com.example.snake.ui.theme.SnakeLightGreen
@@ -34,6 +35,8 @@ fun AyudaScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(BackgroundDark)
+            // FIX [P5]: padding de insets del sistema
+            .safeDrawingPadding()
     ) {
         GridBackground()
 
@@ -87,7 +90,8 @@ fun AyudaScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .background(Brush.horizontalGradient(listOf(SnakeDarkGreen, SnakeGreen, SnakeLightGreen)))
+                    .background(Brush.horizontalGradient(
+                        listOf(SnakeDarkGreen, SnakeGreen, SnakeLightGreen)))
             ) {
                 Button(
                     onClick = onIrAlJuego,
@@ -109,7 +113,8 @@ fun AyudaScreen(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = SnakeLightGreen),
-                border = androidx.compose.foundation.BorderStroke(1.dp, SnakeLightGreen.copy(alpha = 0.4f))
+                border = androidx.compose.foundation.BorderStroke(
+                    1.dp, SnakeLightGreen.copy(alpha = 0.4f))
             ) {
                 Text("← TORNAR AL MENÚ", fontSize = 14.sp, fontWeight = FontWeight.Medium,
                     letterSpacing = 1.sp, modifier = Modifier.padding(vertical = 4.dp))
@@ -131,7 +136,8 @@ private fun MiniBoard() {
         modifier = Modifier
             .clip(RoundedCornerShape(12.dp))
             .border(1.dp, SnakeGreen.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
-            .background(Color(0xFF0D1117))
+            // FIX [E2][F3]: usar constante de SnakeColors en lugar de hardcoded
+            .background(MiniBoardBackground)
             .padding(8.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
@@ -139,11 +145,12 @@ private fun MiniBoard() {
                 Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
                     repeat(boardSize) { col ->
                         val cell = Pair(row, col)
+                        // FIX [E2][F4]: usar constante de SnakeColors en lugar de hardcoded
                         val color = when {
                             cell == headCell   -> SnakeGreen
                             cell in snakeCells -> SnakeLightGreen.copy(alpha = 0.6f)
                             cell in appleCells -> Color(0xFFE53935)
-                            else               -> Color(0xFF1A1A2E)
+                            else               -> MiniBoardEmptyCell
                         }
                         Box(modifier = Modifier
                             .size(24.dp)
@@ -177,7 +184,8 @@ private fun HelpCard(emoji: String, title: String, body: String) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(title, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color.White)
                 Spacer(Modifier.height(4.dp))
-                Text(body, fontSize = 13.sp, color = Color.White.copy(alpha = 0.65f), lineHeight = 19.sp)
+                Text(body, fontSize = 13.sp, color = Color.White.copy(alpha = 0.65f),
+                    lineHeight = 19.sp)
             }
         }
     }

@@ -17,8 +17,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.snake.ui.components.GridBackground
-// FIX [E2]: colores importados desde SnakeColors en lugar de redefinirlos localmente
 import com.example.snake.ui.theme.BackgroundDark
+import com.example.snake.ui.theme.BtnError
 import com.example.snake.ui.theme.SnakeDarkGreen
 import com.example.snake.ui.theme.SnakeGreen
 import com.example.snake.ui.theme.SnakeLightGreen
@@ -39,11 +39,19 @@ fun MenuPrincipalScreen(
         ), label = "logoScale"
     )
 
-    Box(modifier = Modifier.fillMaxSize().background(BackgroundDark)) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(BackgroundDark)
+            // FIX [P6]: padding de insets del sistema para no solapar con barra de estado
+            .safeDrawingPadding()
+    ) {
         GridBackground()
 
         Column(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 32.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -67,7 +75,8 @@ fun MenuPrincipalScreen(
             Spacer(modifier = Modifier.height(16.dp))
             SnakeMenuButton("❓  AJUDA", onAyuda, primary = false)
             Spacer(modifier = Modifier.height(16.dp))
-            SnakeMenuButton("✕  SORTIR", onSalir, primary = false, tint = Color(0xFFEF5350))
+            // FIX [F5]: usar BtnError de SnakeColors en lugar de Color(0xFFEF5350) hardcoded
+            SnakeMenuButton("✕  SORTIR", onSalir, primary = false, tint = BtnError)
 
             Spacer(modifier = Modifier.height(48.dp))
 

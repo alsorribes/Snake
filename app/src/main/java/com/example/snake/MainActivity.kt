@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -17,9 +18,8 @@ import com.example.snake.ui.theme.SnakeTheme
 import com.example.snake.viewmodel.GameViewModel
 import com.example.snake.viewmodel.Pantalla
 
-// FIX [1 cod]: strings hardcoded extraídos como constantes
 private const val EMAIL_MIME_TYPE    = "message/rfc822"
-private const val EMAIL_CHOOSER_TEXT = "Enviar log por email"
+private const val EMAIL_CHOOSER_TEXT = "Enviar log per email"
 
 class MainActivity : ComponentActivity() {
 
@@ -27,6 +27,11 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // FIX [F2][P1]: habilitar edge-to-edge para que el contenido de Compose
+        // gestione correctamente los insets del sistema (barra de estado, notch, etc.)
+        // Cada pantalla aplica su propio safeDrawingPadding() para respetar estos márgenes.
+        enableEdgeToEdge()
 
         setContent {
             SnakeTheme {
