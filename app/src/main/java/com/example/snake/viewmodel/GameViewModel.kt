@@ -17,9 +17,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Date
 
-private const val TICK_JUEGO_MS      = 300L
-private const val TICK_TIEMPO_MS     = 1000L
-private const val DELAY_GAME_OVER_MS = 800L
+private const val TICK_JUEGO_MS = 300L
+private const val TICK_TIEMPO_MS = 1000L
 
 const val EMAIL_DEFECTO = "profesor@example.com"
 
@@ -28,7 +27,6 @@ class GameViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(GameUiState())
     val uiState: StateFlow<GameUiState> = _uiState.asStateFlow()
 
-    // FIX [E4]: inicialización lazy — se asigna en iniciarPartida(), no aquí
     private var direccionPendiente: Direccion = Direccion.DERECHA
 
     private var jobJuego: Job? = null
@@ -37,22 +35,17 @@ class GameViewModel : ViewModel() {
     @Volatile
     private var partidaFinalizada = false
 
-    // -------------------------------------------------------------------------
-    // API pública
-    // -------------------------------------------------------------------------
-
     fun iniciarPartida(config: ConfiguracionPartida) {
         cancelarJobs()
         partidaFinalizada = false
 
         val partida = Partida.nueva(config)
-        // Dirección inicial = la que tiene la serpiente al crearse
         direccionPendiente = partida.serpiente.direccion
 
         _uiState.update {
             GameUiState(
-                partida        = partida,
-                log            = LogPartida.desdeConfiguracion(config),
+                partida = partida,
+                log = LogPartida.desdeConfiguracion(config),
                 pantallaActual = Pantalla.JUEGO
             )
         }
@@ -78,10 +71,21 @@ class GameViewModel : ViewModel() {
         _uiState.update { GameUiState(pantallaActual = Pantalla.CONFIGURACION) }
     }
 
-    fun salir() { cancelarJobs() }
+    fun salir() {
+        cancelarJobs()
+    }
 
     fun actualizarEmailDestinatario(email: String) {
         _uiState.update { it.copy(emailDestinatario = email) }
+    }
+
+    fun irAResultados() {
+        _uiState.update {
+            it.copy(
+                mensajeGameOver = null,
+                pantallaActual = Pantalla.RESULTADOS
+            )
+        }
     }
 
     fun navegarA(pantalla: Pantalla) {
@@ -89,19 +93,21 @@ class GameViewModel : ViewModel() {
         _uiState.update { it.copy(pantallaActual = pantalla) }
     }
 
-    // -------------------------------------------------------------------------
-    // Lógica interna
-    // -------------------------------------------------------------------------
-
     private fun iniciarBucleJuego() {
         jobJuego = viewModelScope.launch {
-            while (true) { delay(TICK_JUEGO_MS); avanzarTick() }
+            while (true) {
+                delay(TICK_JUEGO_MS)
+                avanzarTick()
+            }
         }
     }
 
     private fun iniciarBucleTiempo() {
         jobTiempo = viewModelScope.launch {
-            while (true) { delay(TICK_TIEMPO_MS); aplicarTickTiempo() }
+            while (true) {
+                delay(TICK_TIEMPO_MS)
+                aplicarTickTiempo()
+            }
         }
     }
 
@@ -109,18 +115,26 @@ class GameViewModel : ViewModel() {
         val estado = _uiState.value
         val partida = estado.partida ?: return
         if (partida.haTerminado || estado.enPausa) return
+
         val nuevaPartida = partida.tick(direccionPendiente)
         _uiState.update { it.copy(partida = nuevaPartida) }
-        if (nuevaPartida.haTerminado) finalizarPartida(nuevaPartida)
+
+        if (nuevaPartida.haTerminado) {
+            finalizarPartida(nuevaPartida)
+        }
     }
 
     private fun aplicarTickTiempo() {
         val estado = _uiState.value
         val partida = estado.partida ?: return
         if (partida.haTerminado || estado.enPausa) return
+
         val nuevaPartida = partida.tickTiempo()
         _uiState.update { it.copy(partida = nuevaPartida) }
-        if (nuevaPartida.haTerminado) finalizarPartida(nuevaPartida)
+
+        if (nuevaPartida.haTerminado) {
+            finalizarPartida(nuevaPartida)
+        }
     }
 
     private fun finalizarPartida(partida: Partida) {
@@ -129,34 +143,36 @@ class GameViewModel : ViewModel() {
         cancelarJobs()
 
         val resultado = when (partida.estado) {
-            EstadoJuego.GANADA           -> ResultadoPartida.GANADA
+            EstadoJuego.GANADA -> ResultadoPartida.GANADA
             EstadoJuego.PERDIDA_COLISION -> ResultadoPartida.PERDIDA_COLISION
-            EstadoJuego.PERDIDA_TIEMPO   -> ResultadoPartida.PERDIDA_TIEMPO
-            EstadoJuego.EN_CURSO         -> return
+            EstadoJuego.PERDIDA_TIEMPO -> ResultadoPartida.PERDIDA_TIEMPO
+            EstadoJuego.EN_CURSO -> return
         }
 
         val mensajeFin = when (resultado) {
-            ResultadoPartida.GANADA           -> "🏆 Has guanyat!"
+            ResultadoPartida.GANADA -> "🏆 Has guanyat!"
             ResultadoPartida.PERDIDA_COLISION -> "💀 Game Over — La serp ha xocat"
-            ResultadoPartida.PERDIDA_TIEMPO   -> "⏱ Has esgotat el temps!"
+            ResultadoPartida.PERDIDA_TIEMPO -> "⏱ Has esgotat el temps!"
         }
 
-        val tiempoSobrante = if (partida.config.controlTiempo) partida.tiempoRestanteSeg else 0
+        val tiempoSobrante =
+            if (partida.config.controlTiempo) partida.tiempoRestanteSeg else 0
 
         val logFinal = _uiState.value.log?.copy(
-            resultado         = resultado,
-            tiempoTotalSeg    = partida.tiempoTranscurridoSeg,
+            resultado = resultado,
+            tiempoTotalSeg = partida.tiempoTranscurridoSeg,
             tiempoSobranteSeg = tiempoSobrante,
-            manzanasComidas   = partida.manzanasComidas,
-            longitudFinal     = partida.serpiente.longitud,
-            fechaHoraFin      = Date()
+            manzanasComidas = partida.manzanasComidas,
+            longitudFinal = partida.serpiente.longitud,
+            fechaHoraFin = Date()
         )
 
-        _uiState.update { it.copy(partida = partida, log = logFinal, mensajeGameOver = mensajeFin) }
-
-        viewModelScope.launch {
-            delay(DELAY_GAME_OVER_MS)
-            _uiState.update { it.copy(mensajeGameOver = null, pantallaActual = Pantalla.RESULTADOS) }
+        _uiState.update {
+            it.copy(
+                partida = partida,
+                log = logFinal,
+                mensajeGameOver = mensajeFin
+            )
         }
     }
 
@@ -166,7 +182,6 @@ class GameViewModel : ViewModel() {
     }
 
     private fun reanudar() {
-        // FIX [F6]: guard — no reanudar si no hay partida activa
         val partida = _uiState.value.partida ?: return
         if (partida.haTerminado) return
         _uiState.update { it.copy(enPausa = false) }
@@ -175,8 +190,10 @@ class GameViewModel : ViewModel() {
     }
 
     private fun cancelarJobs() {
-        jobJuego?.cancel();  jobJuego  = null
-        jobTiempo?.cancel(); jobTiempo = null
+        jobJuego?.cancel()
+        jobJuego = null
+        jobTiempo?.cancel()
+        jobTiempo = null
     }
 
     override fun onCleared() {
@@ -185,18 +202,19 @@ class GameViewModel : ViewModel() {
     }
 }
 
-// ─── UI State ────────────────────────────────────────────────────────────────
-
 data class GameUiState(
     val partida: Partida? = null,
     val log: LogPartida? = null,
     val pantallaActual: Pantalla = Pantalla.MENU_PRINCIPAL,
     val enPausa: Boolean = false,
     val emailDestinatario: String = EMAIL_DEFECTO,
-    // FIX [F10]: eliminado mensajeError (nunca se usaba en la UI)
     val mensajeGameOver: String? = null
 )
 
 enum class Pantalla {
-    MENU_PRINCIPAL, AYUDA, CONFIGURACION, JUEGO, RESULTADOS
+    MENU_PRINCIPAL,
+    AYUDA,
+    CONFIGURACION,
+    JUEGO,
+    RESULTADOS
 }

@@ -65,9 +65,10 @@ class MainActivity : ComponentActivity() {
 
                     juegoContent = {
                         JuegoScreen(
-                            uiState            = uiState,
+                            uiState = uiState,
                             onCambiarDireccion = { dir -> viewModel.cambiarDireccion(dir) },
-                            onTogglePausa      = { viewModel.togglePausa() }
+                            onTogglePausa = { viewModel.togglePausa() },
+                            onIrAResultados = { viewModel.irAResultados() }
                         )
                     },
 

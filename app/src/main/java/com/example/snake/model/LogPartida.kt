@@ -37,7 +37,7 @@ data class LogPartida(
 
         sb.appendLine("Àlies: $alias")
         sb.appendLine("Mida graella: $tamanoParrilla")
-        sb.appendLine("Temps total: $tiempoTotalSeg secs.")
+        sb.appendLine("Temps total: $tiempoTotalSeg segs")
         sb.appendLine("Pomes menjades: $manzanasComidas")
         sb.appendLine("Longitud serp: $longitudFinal")
 
@@ -49,7 +49,7 @@ data class LogPartida(
                 }
             }
             ResultadoPartida.PERDIDA_COLISION -> {
-                sb.appendLine("Has perdut !! La serp ha xocat.")
+                sb.appendLine("Has perdut !! La serp ha xocat")
             }
             ResultadoPartida.PERDIDA_TIEMPO -> {
                 sb.appendLine("Has esgotat el temps !!")
