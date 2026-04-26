@@ -1,6 +1,5 @@
 package com.example.snake.ui.theme
 
-// FIX [4]: eliminado import Activity que no se usaba
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -11,24 +10,29 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
+// FIX [F4]: esquemas de color con verdes Snake en lugar de los morados de Material por defecto.
+// Así MaterialTheme.colorScheme.error, .primary, etc. son coherentes con el tema.
 private val DarkColorScheme = darkColorScheme(
-    primary   = Purple80,
-    secondary = PurpleGrey80,
-    tertiary  = Pink80
+    primary   = SnakePrimary,
+    secondary = SnakeSecondary,
+    error     = SnakeError,
+    surface   = SnakeSurface,
+    onSurface = SnakeOnSurface
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary   = Purple40,
-    secondary = PurpleGrey40,
-    tertiary  = Pink40
+    primary   = SnakePrimary,
+    secondary = SnakeSecondary,
+    error     = SnakeError,
+    surface   = SnakeSurface,
+    onSurface = SnakeOnSurface
 )
 
 @Composable
 fun SnakeTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // FIX [13]: dynamicColor desactivado para preservar la identidad visual del juego.
-    // Con dynamicColor=true en Android 12+ el sistema puede sobreescribir los colores
-    // verdes de la app con los colores del fondo de pantalla del usuario.
+    // dynamicColor=false: preserva la identidad visual del juego.
+    // Con true en Android 12+, el sistema sobreescribiría los verdes.
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {

@@ -1,18 +1,21 @@
 package com.example.snake.ui.screens.results
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,16 +24,31 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.snake.ui.components.GridBackground
+import com.example.snake.ui.theme.BackgroundDark
+import com.example.snake.ui.theme.BtnDanger
+import com.example.snake.ui.theme.BtnError
+import com.example.snake.ui.theme.SnakeDarkGreen
+import com.example.snake.ui.theme.SnakeGreen
+import com.example.snake.ui.theme.SnakeLightGreen
+import com.example.snake.ui.theme.SurfaceCard
 import com.example.snake.viewmodel.GameUiState
 
 private val EMAIL_REGEX = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
 
+// =============================================================================
+// FIX [P2]: ResultadosScreen ahora usa el mismo tema oscuro que el resto de pantallas.
+// Antes tenía fondo blanco de Material3 por defecto, inconsistente con el diseño.
+// =============================================================================
 @Composable
 fun ResultadosScreen(
     uiState: GameUiState,
@@ -41,14 +59,23 @@ fun ResultadosScreen(
 ) {
     val log = uiState.log
 
+    // Estado de sin log — pantalla mínima también con tema oscuro
     if (log == null) {
-        Column(
-            modifier = Modifier.fillMaxSize().padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+        Box(
+            modifier = Modifier.fillMaxSize().background(BackgroundDark),
+            contentAlignment = Alignment.Center
         ) {
-            Text("No hay resultados disponibles")
-            Button(onClick = onNuevaPartida, modifier = Modifier.fillMaxWidth()) {
-                Text("Nueva partida")
+            Column(
+                modifier = Modifier.padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text("No hi ha resultats disponibles", color = Color.White, fontSize = 16.sp)
+                Button(
+                    onClick = onNuevaPartida,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = SnakeDarkGreen)
+                ) { Text("← Nova partida") }
             }
         }
         return
@@ -57,87 +84,133 @@ fun ResultadosScreen(
     var email by rememberSaveable(uiState.emailDestinatario) {
         mutableStateOf(uiState.emailDestinatario)
     }
-
-    // FIX [6]: clave estable basada en alias+resultado en vez de generarTexto()
-    // (generarTexto() incluye Date que puede recalcularse entre composiciones)
     val claveLog = "${log.alias}_${log.resultado}_${log.tiempoTotalSeg}"
     var textoLog by rememberSaveable(claveLog) { mutableStateOf(log.generarTexto()) }
-
     var emailError by rememberSaveable { mutableStateOf<String?>(null) }
 
     val focusRequester = remember { FocusRequester() }
-
-    // FIX [7]: try-catch para evitar IllegalStateException si el layout
-    // no está listo todavía cuando se solicita el foco
     LaunchedEffect(Unit) {
-        try {
-            focusRequester.requestFocus()
-        } catch (_: Exception) {
-            // El composable no estaba adjunto al árbol todavía; el usuario
-            // puede tocar el campo manualmente
-        }
+        try { focusRequester.requestFocus() } catch (_: Exception) { }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+    // FIX [P2]: fondo oscuro + cuadrícula decorativa como el resto de pantallas
+    Box(
+        modifier = Modifier.fillMaxSize().background(BackgroundDark)
     ) {
-        Text("Resultados de la partida", style = MaterialTheme.typography.headlineSmall)
+        GridBackground()
 
-        OutlinedTextField(
-            value = log.fechaHoraFormateada(),
-            onValueChange = {},
-            readOnly = true,
-            label = { Text("Día y hora de finalización") },
-            modifier = Modifier.fillMaxWidth()
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            // Cabecera
+            Text(
+                text = "🏁  Resultats",
+                fontSize = 26.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = SnakeGreen
+            )
+            Text(
+                text = "Resum de la partida",
+                fontSize = 13.sp,
+                color = Color.White.copy(alpha = 0.5f)
+            )
 
-        OutlinedTextField(
-            value = textoLog,
-            onValueChange = { textoLog = it },
-            label = { Text("Valores del log") },
-            modifier = Modifier.fillMaxWidth(),
-            minLines = 5
-        )
+            // Fecha y hora
+            EtiquetaResultado("📅  Dia i hora de finalització")
+            OutlinedTextField(
+                value = log.fechaHoraFormateada(),
+                onValueChange = {},
+                readOnly = true,
+                modifier = Modifier.fillMaxWidth(),
+                colors = camposColores()
+            )
 
-        OutlinedTextField(
-            value = email,
-            onValueChange = {
-                email = it
-                emailError = null
-                onEmailCambiado(it)
-            },
-            label = { Text("E-mail destinatario") },
-            modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
-            singleLine = true,
-            isError = emailError != null,
-            supportingText = emailError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
-        )
+            // Log de partida (editable — se envía como cuerpo del email)
+            EtiquetaResultado("📋  Valors del log")
+            OutlinedTextField(
+                value = textoLog,
+                onValueChange = { textoLog = it },
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 5,
+                colors = camposColores()
+            )
 
-        Button(
-            onClick = {
-                if (!EMAIL_REGEX.matches(email)) {
-                    emailError = "Introduce un email válido"
-                } else {
+            // Email destinatario con foco automático
+            EtiquetaResultado("📧  E-mail destinatari")
+            OutlinedTextField(
+                value = email,
+                onValueChange = {
+                    email = it
                     emailError = null
-                    onEnviarEmail(email)
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) { Text("📧  Enviar e-mail") }
+                    onEmailCambiado(it)
+                },
+                modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+                singleLine = true,
+                isError = emailError != null,
+                supportingText = emailError?.let {
+                    { Text(it, color = BtnError, fontSize = 12.sp) }
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                colors = camposColores()
+            )
 
-        OutlinedButton(onClick = onNuevaPartida, modifier = Modifier.fillMaxWidth()) {
-            Text("← Nova partida")
+            // Botones de acción
+            Button(
+                onClick = {
+                    if (!EMAIL_REGEX.matches(email)) {
+                        emailError = "Introdueix un email vàlid"
+                    } else {
+                        emailError = null
+                        onEnviarEmail(email)
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = SnakeDarkGreen),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("📧  Enviar e-mail", fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(vertical = 4.dp))
+            }
+
+            OutlinedButton(
+                onClick = onNuevaPartida,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = SnakeLightGreen),
+                border = androidx.compose.foundation.BorderStroke(1.dp, SnakeLightGreen.copy(0.4f))
+            ) {
+                Text("← Nova partida", modifier = Modifier.padding(vertical = 4.dp))
+            }
+
+            Button(
+                onClick = onSalir,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = BtnDanger),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("✕  Sortir", fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(vertical = 4.dp))
+            }
         }
-
-        Button(
-            onClick = onSalir,
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFB71C1C))
-        ) { Text("✕  Sortir") }
     }
 }
+
+@Composable
+private fun EtiquetaResultado(texto: String) {
+    Text(texto, color = SnakeLightGreen, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+}
+
+@Composable
+private fun camposColores() = OutlinedTextFieldDefaults.colors(
+    focusedBorderColor   = SnakeGreen,
+    unfocusedBorderColor = Color.White.copy(alpha = 0.2f),
+    focusedTextColor     = Color.White,
+    unfocusedTextColor   = Color.White,
+    cursorColor          = SnakeGreen,
+    focusedLabelColor    = SnakeLightGreen,
+    unfocusedLabelColor  = SnakeLightGreen.copy(alpha = 0.6f)
+)

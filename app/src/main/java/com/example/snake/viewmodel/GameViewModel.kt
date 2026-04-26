@@ -17,9 +17,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Date
 
-private const val TICK_JUEGO_MS  = 300L
-private const val TICK_TIEMPO_MS = 1000L
-// Tiempo que se muestra el mensaje de Game Over antes de navegar a Resultados
+private const val TICK_JUEGO_MS      = 300L
+private const val TICK_TIEMPO_MS     = 1000L
 private const val DELAY_GAME_OVER_MS = 800L
 
 const val EMAIL_DEFECTO = "profesor@example.com"
@@ -29,11 +28,12 @@ class GameViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(GameUiState())
     val uiState: StateFlow<GameUiState> = _uiState.asStateFlow()
 
+    // FIX [E4]: inicialización lazy — se asigna en iniciarPartida(), no aquí
     private var direccionPendiente: Direccion = Direccion.DERECHA
+
     private var jobJuego: Job? = null
     private var jobTiempo: Job? = null
 
-    // FIX [1]: @Volatile garantiza visibilidad entre corrutinas en distintos threads
     @Volatile
     private var partidaFinalizada = false
 
@@ -46,6 +46,7 @@ class GameViewModel : ViewModel() {
         partidaFinalizada = false
 
         val partida = Partida.nueva(config)
+        // Dirección inicial = la que tiene la serpiente al crearse
         direccionPendiente = partida.serpiente.direccion
 
         _uiState.update {
@@ -62,7 +63,6 @@ class GameViewModel : ViewModel() {
 
     fun cambiarDireccion(nuevaDireccion: Direccion) {
         val partida = _uiState.value.partida ?: return
-        // FIX [2]: ignorar input si la partida ya ha terminado
         if (partida.haTerminado) return
         if (!nuevaDireccion.esOpuesta(partida.serpiente.direccion)) {
             direccionPendiente = nuevaDireccion
@@ -78,9 +78,7 @@ class GameViewModel : ViewModel() {
         _uiState.update { GameUiState(pantallaActual = Pantalla.CONFIGURACION) }
     }
 
-    fun salir() {
-        cancelarJobs()
-    }
+    fun salir() { cancelarJobs() }
 
     fun actualizarEmailDestinatario(email: String) {
         _uiState.update { it.copy(emailDestinatario = email) }
@@ -88,7 +86,7 @@ class GameViewModel : ViewModel() {
 
     fun navegarA(pantalla: Pantalla) {
         if (pantalla != Pantalla.JUEGO) cancelarJobs()
-        _uiState.update { it.copy(pantallaActual = pantalla, mensajeError = null) }
+        _uiState.update { it.copy(pantallaActual = pantalla) }
     }
 
     // -------------------------------------------------------------------------
@@ -97,19 +95,13 @@ class GameViewModel : ViewModel() {
 
     private fun iniciarBucleJuego() {
         jobJuego = viewModelScope.launch {
-            while (true) {
-                delay(TICK_JUEGO_MS)
-                avanzarTick()
-            }
+            while (true) { delay(TICK_JUEGO_MS); avanzarTick() }
         }
     }
 
     private fun iniciarBucleTiempo() {
         jobTiempo = viewModelScope.launch {
-            while (true) {
-                delay(TICK_TIEMPO_MS)
-                aplicarTickTiempo()
-            }
+            while (true) { delay(TICK_TIEMPO_MS); aplicarTickTiempo() }
         }
     }
 
@@ -117,10 +109,8 @@ class GameViewModel : ViewModel() {
         val estado = _uiState.value
         val partida = estado.partida ?: return
         if (partida.haTerminado || estado.enPausa) return
-
         val nuevaPartida = partida.tick(direccionPendiente)
         _uiState.update { it.copy(partida = nuevaPartida) }
-
         if (nuevaPartida.haTerminado) finalizarPartida(nuevaPartida)
     }
 
@@ -128,17 +118,14 @@ class GameViewModel : ViewModel() {
         val estado = _uiState.value
         val partida = estado.partida ?: return
         if (partida.haTerminado || estado.enPausa) return
-
         val nuevaPartida = partida.tickTiempo()
         _uiState.update { it.copy(partida = nuevaPartida) }
-
         if (nuevaPartida.haTerminado) finalizarPartida(nuevaPartida)
     }
 
     private fun finalizarPartida(partida: Partida) {
         if (partidaFinalizada) return
         partidaFinalizada = true
-
         cancelarJobs()
 
         val resultado = when (partida.estado) {
@@ -148,9 +135,8 @@ class GameViewModel : ViewModel() {
             EstadoJuego.EN_CURSO         -> return
         }
 
-        // FIX [8]: mensaje de feedback visible en el estado de la UI
         val mensajeFin = when (resultado) {
-            ResultadoPartida.GANADA           -> "🏆 ¡Has ganado!"
+            ResultadoPartida.GANADA           -> "🏆 Has guanyat!"
             ResultadoPartida.PERDIDA_COLISION -> "💀 Game Over — La serp ha xocat"
             ResultadoPartida.PERDIDA_TIEMPO   -> "⏱ Has esgotat el temps!"
         }
@@ -166,24 +152,11 @@ class GameViewModel : ViewModel() {
             fechaHoraFin      = Date()
         )
 
-        // Mostrar feedback brevemente antes de navegar a Resultados
-        _uiState.update {
-            it.copy(
-                partida        = partida,
-                log            = logFinal,
-                mensajeGameOver = mensajeFin
-            )
-        }
+        _uiState.update { it.copy(partida = partida, log = logFinal, mensajeGameOver = mensajeFin) }
 
-        // FIX [8]: delay para que el usuario vea el mensaje antes de navegar
         viewModelScope.launch {
             delay(DELAY_GAME_OVER_MS)
-            _uiState.update {
-                it.copy(
-                    mensajeGameOver = null,
-                    pantallaActual  = Pantalla.RESULTADOS
-                )
-            }
+            _uiState.update { it.copy(mensajeGameOver = null, pantallaActual = Pantalla.RESULTADOS) }
         }
     }
 
@@ -193,6 +166,9 @@ class GameViewModel : ViewModel() {
     }
 
     private fun reanudar() {
+        // FIX [F6]: guard — no reanudar si no hay partida activa
+        val partida = _uiState.value.partida ?: return
+        if (partida.haTerminado) return
         _uiState.update { it.copy(enPausa = false) }
         iniciarBucleJuego()
         iniciarBucleTiempo()
@@ -217,15 +193,10 @@ data class GameUiState(
     val pantallaActual: Pantalla = Pantalla.MENU_PRINCIPAL,
     val enPausa: Boolean = false,
     val emailDestinatario: String = EMAIL_DEFECTO,
-    val mensajeError: String? = null,
-    // FIX [8]: campo para el mensaje de fin de partida (Game Over / Victoria)
+    // FIX [F10]: eliminado mensajeError (nunca se usaba en la UI)
     val mensajeGameOver: String? = null
 )
 
 enum class Pantalla {
-    MENU_PRINCIPAL,
-    AYUDA,
-    CONFIGURACION,
-    JUEGO,
-    RESULTADOS
+    MENU_PRINCIPAL, AYUDA, CONFIGURACION, JUEGO, RESULTADOS
 }
