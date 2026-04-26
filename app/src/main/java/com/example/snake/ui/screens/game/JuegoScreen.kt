@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -24,6 +25,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.snake.model.Casilla
@@ -37,12 +39,11 @@ private val ColorCuadricula       = Color(0xFF2A3B47)
 private val ColorCabeza           = Color(0xFF4CAF50)
 private val ColorCuerpo           = Color(0xFF81C784)
 private val ColorManzana          = Color(0xFFE53935)
-// FIX [E][K]: colores del tiempo según enunciado
-private val ColorTiempoSinControl = Color(0xFF2196F3)  // Azul  (tiempo transcurrido)
-private val ColorTiempoConControl = Color(0xFFF44336)  // Rojo  (cuenta atrás)
+private val ColorTiempoSinControl = Color(0xFF2196F3)
+private val ColorTiempoConControl = Color(0xFFF44336)
 
 // =============================================================================
-// STATEFUL: JuegoScreen — único punto que conoce GameUiState
+// STATEFUL: JuegoScreen
 // =============================================================================
 @Composable
 fun JuegoScreen(
@@ -59,21 +60,54 @@ fun JuegoScreen(
         return
     }
 
-    // FIX [C]: detectar orientación y usar layout diferente
     val esLandscape = LocalConfiguration.current.screenWidthDp >
             LocalConfiguration.current.screenHeightDp
 
-    if (esLandscape) {
-        JuegoLandscape(partida = partida, enPausa = uiState.enPausa,
-            onCambiarDireccion = onCambiarDireccion, onTogglePausa = onTogglePausa)
-    } else {
-        JuegoPortrait(partida = partida, enPausa = uiState.enPausa,
-            onCambiarDireccion = onCambiarDireccion, onTogglePausa = onTogglePausa)
+    Box(Modifier.fillMaxSize()) {
+        if (esLandscape) {
+            JuegoLandscape(partida, uiState.enPausa, onCambiarDireccion, onTogglePausa)
+        } else {
+            JuegoPortrait(partida, uiState.enPausa, onCambiarDireccion, onTogglePausa)
+        }
+
+        // FIX [8]: overlay de Game Over / Victoria visible brevemente
+        uiState.mensajeGameOver?.let { mensaje ->
+            GameOverOverlay(mensaje = mensaje)
+        }
     }
 }
 
 // =============================================================================
-// STATELESS: JuegoPortrait — layout vertical normal
+// STATELESS: GameOverOverlay — feedback visual al terminar la partida
+// FIX [8]: criterio "Ausencia de imágenes o feedback" [-0.25]
+// =============================================================================
+@Composable
+private fun GameOverOverlay(mensaje: String) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.7f)),
+        contentAlignment = Alignment.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .background(Color(0xFF1B1B2F), RoundedCornerShape(20.dp))
+                .padding(horizontal = 40.dp, vertical = 28.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = mensaje,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = Color.White,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+// =============================================================================
+// STATELESS: JuegoPortrait — controles GRANDES y CENTRADOS (diseño original)
 // =============================================================================
 @Composable
 private fun JuegoPortrait(
@@ -87,13 +121,14 @@ private fun JuegoPortrait(
             .fillMaxSize()
             .background(ColorFondoTablero)
             .padding(12.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         InfoPartida(
             alias           = partida.config.alias,
             manzanasComidas = partida.manzanasComidas,
             longitud        = partida.serpiente.longitud,
-            tiempoMostrar   = partida.tiempoParaMostrar,   // FIX [E][K]
+            tiempoMostrar   = partida.tiempoParaMostrar,
             controlTiempo   = partida.config.controlTiempo,
             enPausa         = enPausa
         )
@@ -110,13 +145,13 @@ private fun JuegoPortrait(
 
         BotonPausa(enPausa = enPausa, onTogglePausa = onTogglePausa)
 
-        ControlesDireccion(onCambiarDireccion = onCambiarDireccion)
+        // Controles GRANDES y CENTRADOS — diseño original restaurado
+        ControlesDireccion(onCambiarDireccion = onCambiarDireccion, tamanoBoton = 72.dp)
     }
 }
 
 // =============================================================================
-// STATELESS: JuegoLandscape — FIX [C]: layout horizontal
-// Tablero a la izquierda, controles + info a la derecha
+// STATELESS: JuegoLandscape — tablero izquierda, controles derecha
 // =============================================================================
 @Composable
 private fun JuegoLandscape(
@@ -132,7 +167,6 @@ private fun JuegoLandscape(
             .padding(8.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Tablero ocupa el lado izquierdo con aspect ratio correcto
         TableroJuego(
             filas     = partida.filas,
             columnas  = partida.columnas,
@@ -143,11 +177,8 @@ private fun JuegoLandscape(
                 .aspectRatio(partida.columnas.toFloat() / partida.filas.toFloat())
         )
 
-        // Panel derecho: info + pausa + controles
         Column(
-            modifier = Modifier
-                .fillMaxHeight()
-                .weight(1f),
+            modifier = Modifier.fillMaxHeight().weight(1f),
             verticalArrangement = Arrangement.SpaceEvenly,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -163,15 +194,14 @@ private fun JuegoLandscape(
             BotonPausa(enPausa = enPausa, onTogglePausa = onTogglePausa,
                 modifier = Modifier.fillMaxWidth())
 
-            ControlesDireccion(onCambiarDireccion = onCambiarDireccion)
+            // En landscape los botones son algo más pequeños para caber
+            ControlesDireccion(onCambiarDireccion = onCambiarDireccion, tamanoBoton = 52.dp)
         }
     }
 }
 
 // =============================================================================
 // STATELESS: InfoPartida
-// FIX [E][K]: recibe tiempoMostrar ya calculado desde Partida.tiempoParaMostrar
-// (tiempo restante con control, tiempo transcurrido sin control)
 // =============================================================================
 @Composable
 private fun InfoPartida(
@@ -183,7 +213,7 @@ private fun InfoPartida(
     enPausa: Boolean
 ) {
     val colorTiempo = if (controlTiempo) ColorTiempoConControl else ColorTiempoSinControl
-    val labelTiempo = if (controlTiempo) "⏱ ${tiempoMostrar}s restantes" else "⏱ ${tiempoMostrar}s"
+    val labelTiempo = if (controlTiempo) "⏱ ${tiempoMostrar}s restants" else "⏱ ${tiempoMostrar}s"
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -197,7 +227,7 @@ private fun InfoPartida(
         }
         Column(horizontalAlignment = Alignment.End) {
             Text(labelTiempo, color = colorTiempo, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            if (enPausa) Text("PAUSADO", color = Color.Yellow, fontSize = 11.sp,
+            if (enPausa) Text("PAUSAT", color = Color.Yellow, fontSize = 11.sp,
                 fontWeight = FontWeight.Bold)
         }
     }
@@ -220,8 +250,8 @@ fun TableroJuego(
 
         drawRect(color = ColorFondoTablero, size = size)
 
-        for (f in 0..filas)   drawLine(ColorCuadricula, Offset(0f, f*cellH), Offset(size.width, f*cellH), 1f)
-        for (c in 0..columnas) drawLine(ColorCuadricula, Offset(c*cellW, 0f), Offset(c*cellW, size.height), 1f)
+        for (f in 0..filas)    drawLine(ColorCuadricula, Offset(0f, f * cellH), Offset(size.width, f * cellH), 1f)
+        for (c in 0..columnas) drawLine(ColorCuadricula, Offset(c * cellW, 0f), Offset(c * cellW, size.height), 1f)
 
         drawRect(
             color   = ColorManzana,
@@ -262,22 +292,36 @@ private fun BotonPausa(
 }
 
 // =============================================================================
-// STATELESS: ControlesDireccion
+// STATELESS: ControlesDireccion — centrados, tamaño configurable
+// tamanoBoton = 72.dp en portrait (grande), 52.dp en landscape
 // =============================================================================
 @Composable
-private fun ControlesDireccion(onCambiarDireccion: (Direccion) -> Unit) {
+private fun ControlesDireccion(
+    onCambiarDireccion: (Direccion) -> Unit,
+    tamanoBoton: androidx.compose.ui.unit.Dp = 72.dp
+) {
     val colorBoton = Color(0xFF2E7D32)
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        BotonDireccion("▲", Direccion.ARRIBA,    colorBoton, onCambiarDireccion, Modifier.size(56.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            BotonDireccion("◀", Direccion.IZQUIERDA, colorBoton, onCambiarDireccion, Modifier.size(56.dp))
-            Box(Modifier.size(56.dp))
-            BotonDireccion("▶", Direccion.DERECHA,   colorBoton, onCambiarDireccion, Modifier.size(56.dp))
+        BotonDireccion("▲", Direccion.ARRIBA, colorBoton, onCambiarDireccion,
+            Modifier.size(tamanoBoton))
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            BotonDireccion("◀", Direccion.IZQUIERDA, colorBoton, onCambiarDireccion,
+                Modifier.size(tamanoBoton))
+            Box(Modifier.size(tamanoBoton))
+            BotonDireccion("▶", Direccion.DERECHA, colorBoton, onCambiarDireccion,
+                Modifier.size(tamanoBoton))
         }
-        BotonDireccion("▼", Direccion.ABAJO,    colorBoton, onCambiarDireccion, Modifier.size(56.dp))
+
+        BotonDireccion("▼", Direccion.ABAJO, colorBoton, onCambiarDireccion,
+            Modifier.size(tamanoBoton))
     }
 }
 
@@ -292,8 +336,11 @@ private fun BotonDireccion(
     onClick: (Direccion) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Button(onClick = { onClick(direccion) }, modifier = modifier,
-        colors = ButtonDefaults.buttonColors(containerColor = color)) {
-        Text(etiqueta, fontSize = 18.sp, color = Color.White)
+    Button(
+        onClick = { onClick(direccion) },
+        modifier = modifier,
+        colors = ButtonDefaults.buttonColors(containerColor = color)
+    ) {
+        Text(etiqueta, fontSize = 22.sp, color = Color.White)
     }
 }

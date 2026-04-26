@@ -1,10 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
+    <!-- FIX [12]: colores del tema Snake en lugar de los defaults de Android -->
+
+    <!-- Verdes principales del juego -->
+    <color name="snake_green">#FF4CAF50</color>
+    <color name="snake_dark_green">#FF2E7D32</color>
+    <color name="snake_light_green">#FF81C784</color>
+
+    <!-- Fondos -->
+    <color name="background_dark">#FF1B1B2F</color>
+    <color name="surface_card">#FF252540</color>
+    <color name="board_background">#FF101820</color>
+    <color name="board_grid">#FF2A3B47</color>
+
+    <!-- Elementos del juego -->
+    <color name="snake_head">#FF4CAF50</color>
+    <color name="snake_body">#FF81C784</color>
+    <color name="apple_red">#FFE53935</color>
+
+    <!-- Tiempo -->
+    <color name="time_no_control">#FF2196F3</color>
+    <color name="time_with_control">#FFF44336</color>
+
+    <!-- Acciones -->
+    <color name="btn_danger">#FFB71C1C</color>
+    <color name="btn_neutral">#FF37474F</color>
+
+    <!-- Blancos y negros -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 </resources>

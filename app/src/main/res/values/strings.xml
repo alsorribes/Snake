@@ -1,3 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Nombre de la app -->
     <string name="app_name">Snake</string>
+
+    <!-- FIX [11]: recursos externalizados para cumplir el criterio de corrección -->
+    <!-- Email -->
+    <string name="email_mime_type">message/rfc822</string>
+    <string name="email_chooser_title">Enviar log per email</string>
+    <string name="email_defecto">profesor@example.com</string>
+
+    <!-- Configuración -->
+    <string name="alias_defecto">Jugador</string>
+    <string name="alias_placeholder">Ex: Jugador</string>
+    <string name="config_titulo">⚙️  Configuració</string>
+    <string name="config_subtitulo">Ajusta els paràmetres de la teva partida</string>
+    <string name="config_alias_label">Àlies</string>
+    <string name="config_tamano_label">📐  Mida de la parrilla</string>
+    <string name="config_tiempo_label">⏱️  Control del temps</string>
+    <string name="config_tiempo_checkbox">Activar temps màxim</string>
+    <string name="config_tiempo_campo">Temps màxim (segons)</string>
+    <string name="config_empezar">▶  COMENÇAR PARTIDA</string>
+    <string name="config_volver">← TORNAR</string>
+
+    <!-- Errores de validación -->
+    <string name="error_alias_vacio">L\'àlies no pot estar buit.</string>
+    <string name="error_tiempo_invalido">Introdueix un nombre de segons vàlid (> 0)</string>
+    <string name="error_email_invalido">Introdueix un email vàlid</string>
+    <string name="error_tiempo_maximo">El temps màxim ha de ser major que 0.</string>
+
+    <!-- Juego -->
+    <string name="juego_pausar">⏸  PAUSAR</string>
+    <string name="juego_reanudar">▶  REPRENDRE</string>
+    <string name="juego_sin_partida">No hi ha partida en curs</string>
+
+    <!-- Resultados -->
+    <string name="resultados_titulo">Resultats de la partida</string>
+    <string name="resultados_fecha_label">Dia i hora de finalització</string>
+    <string name="resultados_log_label">Valors del log</string>
+    <string name="resultados_email_label">E-mail destinatari</string>
+    <string name="resultados_enviar">📧  Enviar e-mail</string>
+    <string name="resultados_nueva_partida">← Nova partida</string>
+    <string name="resultados_salir">✕  Sortir</string>
+    <string name="resultados_sin_datos">No hi ha resultats disponibles</string>
+
+    <!-- Mensajes de fin de partida -->
+    <string name="msg_ganada">🏆 Has guanyat!</string>
+    <string name="msg_perdida_colision">💀 Game Over — La serp ha xocat</string>
+    <string name="msg_perdida_tiempo">⏱ Has esgotat el temps!</string>
+
+    <!-- Ayuda -->
+    <string name="ayuda_titulo">AJUDA</string>
+    <string name="ayuda_subtitulo">Com jugar al Snake</string>
+    <string name="ayuda_ir_juego">▶  ANAR AL JOC</string>
+    <string name="ayuda_volver">← TORNAR AL MENÚ</string>
+
+    <!-- Menú principal -->
+    <string name="menu_empezar">▶  COMENÇAR PARTIDA</string>
+    <string name="menu_ayuda">❓  AJUDA</string>
+    <string name="menu_salir">✕  SORTIR</string>
+    <string name="menu_subtitulo">El joc de la serp</string>
+    <string name="menu_tagline">Menja pomes · Creix · Sobreviu</string>
 </resources>

@@ -17,11 +17,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Date
 
-// FIX [1 cod]: constantes extraídas (no hardcoded)
 private const val TICK_JUEGO_MS  = 300L
 private const val TICK_TIEMPO_MS = 1000L
+// Tiempo que se muestra el mensaje de Game Over antes de navegar a Resultados
+private const val DELAY_GAME_OVER_MS = 800L
 
-// FIX [1 cod]: email por defecto como constante, no hardcoded en la data class
 const val EMAIL_DEFECTO = "profesor@example.com"
 
 class GameViewModel : ViewModel() {
@@ -33,8 +33,8 @@ class GameViewModel : ViewModel() {
     private var jobJuego: Job? = null
     private var jobTiempo: Job? = null
 
-    // FIX [3][5]: flag para evitar que finalizarPartida() se ejecute dos veces
-    // si avanzarTick() y aplicarTickTiempo() coinciden en el mismo instante
+    // FIX [1]: @Volatile garantiza visibilidad entre corrutinas en distintos threads
+    @Volatile
     private var partidaFinalizada = false
 
     // -------------------------------------------------------------------------
@@ -50,19 +50,20 @@ class GameViewModel : ViewModel() {
 
         _uiState.update {
             GameUiState(
-                partida = partida,
-                log = LogPartida.desdeConfiguracion(config),
+                partida        = partida,
+                log            = LogPartida.desdeConfiguracion(config),
                 pantallaActual = Pantalla.JUEGO
             )
         }
 
         iniciarBucleJuego()
-        iniciarBucleTiempo()   // FIX [8]: el bucle de tiempo corre SIEMPRE para
-        // contabilizar tiempoTranscurridoSeg correctamente
+        iniciarBucleTiempo()
     }
 
     fun cambiarDireccion(nuevaDireccion: Direccion) {
         val partida = _uiState.value.partida ?: return
+        // FIX [2]: ignorar input si la partida ya ha terminado
+        if (partida.haTerminado) return
         if (!nuevaDireccion.esOpuesta(partida.serpiente.direccion)) {
             direccionPendiente = nuevaDireccion
         }
@@ -120,9 +121,7 @@ class GameViewModel : ViewModel() {
         val nuevaPartida = partida.tick(direccionPendiente)
         _uiState.update { it.copy(partida = nuevaPartida) }
 
-        if (nuevaPartida.haTerminado) {
-            finalizarPartida(nuevaPartida)
-        }
+        if (nuevaPartida.haTerminado) finalizarPartida(nuevaPartida)
     }
 
     private fun aplicarTickTiempo() {
@@ -133,15 +132,9 @@ class GameViewModel : ViewModel() {
         val nuevaPartida = partida.tickTiempo()
         _uiState.update { it.copy(partida = nuevaPartida) }
 
-        if (nuevaPartida.haTerminado) {
-            finalizarPartida(nuevaPartida)
-        }
+        if (nuevaPartida.haTerminado) finalizarPartida(nuevaPartida)
     }
 
-    /**
-     * FIX [3][5]: guard con [partidaFinalizada] para que nunca se ejecute dos veces,
-     * aunque avanzarTick() y aplicarTickTiempo() coincidan en el mismo instante.
-     */
     private fun finalizarPartida(partida: Partida) {
         if (partidaFinalizada) return
         partidaFinalizada = true
@@ -155,23 +148,42 @@ class GameViewModel : ViewModel() {
             EstadoJuego.EN_CURSO         -> return
         }
 
+        // FIX [8]: mensaje de feedback visible en el estado de la UI
+        val mensajeFin = when (resultado) {
+            ResultadoPartida.GANADA           -> "🏆 ¡Has ganado!"
+            ResultadoPartida.PERDIDA_COLISION -> "💀 Game Over — La serp ha xocat"
+            ResultadoPartida.PERDIDA_TIEMPO   -> "⏱ Has esgotat el temps!"
+        }
+
         val tiempoSobrante = if (partida.config.controlTiempo) partida.tiempoRestanteSeg else 0
 
         val logFinal = _uiState.value.log?.copy(
-            resultado          = resultado,
-            tiempoTotalSeg     = partida.tiempoTranscurridoSeg,
-            tiempoSobranteSeg  = tiempoSobrante,
-            manzanasComidas    = partida.manzanasComidas,
-            longitudFinal      = partida.serpiente.longitud,
-            fechaHoraFin       = Date()
+            resultado         = resultado,
+            tiempoTotalSeg    = partida.tiempoTranscurridoSeg,
+            tiempoSobranteSeg = tiempoSobrante,
+            manzanasComidas   = partida.manzanasComidas,
+            longitudFinal     = partida.serpiente.longitud,
+            fechaHoraFin      = Date()
         )
 
+        // Mostrar feedback brevemente antes de navegar a Resultados
         _uiState.update {
             it.copy(
                 partida        = partida,
                 log            = logFinal,
-                pantallaActual = Pantalla.RESULTADOS
+                mensajeGameOver = mensajeFin
             )
+        }
+
+        // FIX [8]: delay para que el usuario vea el mensaje antes de navegar
+        viewModelScope.launch {
+            delay(DELAY_GAME_OVER_MS)
+            _uiState.update {
+                it.copy(
+                    mensajeGameOver = null,
+                    pantallaActual  = Pantalla.RESULTADOS
+                )
+            }
         }
     }
 
@@ -181,7 +193,6 @@ class GameViewModel : ViewModel() {
     }
 
     private fun reanudar() {
-        val config = _uiState.value.partida?.config ?: return
         _uiState.update { it.copy(enPausa = false) }
         iniciarBucleJuego()
         iniciarBucleTiempo()
@@ -205,9 +216,10 @@ data class GameUiState(
     val log: LogPartida? = null,
     val pantallaActual: Pantalla = Pantalla.MENU_PRINCIPAL,
     val enPausa: Boolean = false,
-    // FIX [1 cod]: email por defecto desde constante, no literal hardcoded
     val emailDestinatario: String = EMAIL_DEFECTO,
-    val mensajeError: String? = null
+    val mensajeError: String? = null,
+    // FIX [8]: campo para el mensaje de fin de partida (Game Over / Victoria)
+    val mensajeGameOver: String? = null
 )
 
 enum class Pantalla {

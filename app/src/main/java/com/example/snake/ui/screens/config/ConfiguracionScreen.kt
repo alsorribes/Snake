@@ -16,7 +16,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -43,26 +42,22 @@ private val SnakeGreen      = Color(0xFF4CAF50)
 private val SnakeDarkGreen  = Color(0xFF2E7D32)
 private val SnakeLightGreen = Color(0xFF81C784)
 private val BackgroundDark  = Color(0xFF1B1B2F)
-private val SurfaceCard     = Color(0xFF252540)
+// FIX [3]: eliminado SurfaceCard que no se usaba (warning de compilador)
 
 // =============================================================================
-// COMPOSABLE STATEFUL: ConfiguracionScreen
-// Gestiona todo el estado local de la pantalla y delega en stateless.
-// FIX [F]: descompuesto correctamente según criterio @Composable stateful/stateless
+// STATEFUL: ConfiguracionScreen
 // =============================================================================
 @Composable
 fun ConfiguracionScreen(
     onEmpezar: (ConfiguracionPartida) -> Unit,
     onVolver: () -> Unit
 ) {
-    // FIX [A]: alias con placeholder "Jugador" como valor inicial visible
-    var alias           by rememberSaveable { mutableStateOf("") }
+    var alias             by rememberSaveable { mutableStateOf("") }
     var tamanoSeleccionado by rememberSaveable { mutableStateOf(TamanoParrilla.MEDIANA.name) }
-    var controlTiempo   by rememberSaveable { mutableStateOf(false) }
+    var controlTiempo     by rememberSaveable { mutableStateOf(false) }
     var tiempoMaximoTexto by rememberSaveable { mutableStateOf(TIEMPO_MAXIMO_DEFECTO_SEG.toString()) }
-    var errorGeneral    by rememberSaveable { mutableStateOf<String?>(null) }
-    // FIX [B]: error específico para el campo tiempo
-    var errorTiempo     by rememberSaveable { mutableStateOf<String?>(null) }
+    var errorGeneral      by rememberSaveable { mutableStateOf<String?>(null) }
+    var errorTiempo       by rememberSaveable { mutableStateOf<String?>(null) }
 
     val tamanoParrilla = TamanoParrilla.valueOf(tamanoSeleccionado)
 
@@ -74,31 +69,17 @@ fun ConfiguracionScreen(
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Cabecera
-        Text(
-            text = "⚙️  Configuración",
-            fontSize = 26.sp,
-            fontWeight = FontWeight.ExtraBold,
-            color = SnakeGreen
-        )
-        Text(
-            text = "Ajusta los parámetros de tu partida",
-            fontSize = 13.sp,
-            color = Color.White.copy(alpha = 0.5f)
-        )
+        Text("⚙️  Configuració", fontSize = 26.sp, fontWeight = FontWeight.ExtraBold,
+            color = SnakeGreen)
+        Text("Ajusta els paràmetres de la teva partida", fontSize = 13.sp,
+            color = Color.White.copy(alpha = 0.5f))
 
         Spacer(Modifier.height(4.dp))
 
-        // FIX [F]: cada sección es un composable stateless independiente
-        SeccionAlias(
-            alias = alias,
-            onAliasChange = { alias = it; errorGeneral = null }
-        )
+        SeccionAlias(alias = alias, onAliasChange = { alias = it; errorGeneral = null })
 
-        SeccionTamano(
-            tamanoSeleccionado = tamanoSeleccionado,
-            onTamanoChange = { tamanoSeleccionado = it; errorGeneral = null }
-        )
+        SeccionTamano(tamanoSeleccionado = tamanoSeleccionado,
+            onTamanoChange = { tamanoSeleccionado = it; errorGeneral = null })
 
         SeccionTiempo(
             controlTiempo = controlTiempo,
@@ -108,21 +89,18 @@ fun ConfiguracionScreen(
             onTiempoTextoChange = { tiempoMaximoTexto = it; errorTiempo = null }
         )
 
-        // Error general
         if (errorGeneral != null) {
             Text(errorGeneral!!, color = Color(0xFFEF5350), fontSize = 13.sp)
         }
 
         Spacer(Modifier.height(4.dp))
 
-        // Botón Empezar
         Button(
             onClick = {
-                // FIX [B]: validar tiempo antes de continuar
                 if (controlTiempo) {
                     val t = tiempoMaximoTexto.toIntOrNull()
                     if (t == null || t <= 0) {
-                        errorTiempo = "Introduce un número de segundos válido (> 0)"
+                        errorTiempo = "Introdueix un nombre de segons vàlid (> 0)"
                         return@Button
                     }
                 }
@@ -133,42 +111,34 @@ fun ConfiguracionScreen(
                     tiempoMaximoSeg = tiempoMaximoTexto.toIntOrNull() ?: TIEMPO_MAXIMO_DEFECTO_SEG
                 )
                 val err = config.validar()
-                if (err != null) { errorGeneral = err } else { onEmpezar(config) }
+                if (err != null) errorGeneral = err else onEmpezar(config)
             },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(containerColor = SnakeDarkGreen)
         ) {
-            Text("▶  EMPEZAR PARTIDA", fontWeight = FontWeight.Bold,
+            Text("▶  COMENÇAR PARTIDA", fontWeight = FontWeight.Bold,
                 fontSize = 15.sp, modifier = Modifier.padding(vertical = 4.dp))
         }
 
-        OutlinedButton(
-            onClick = onVolver,
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = SnakeLightGreen)
-        ) {
-            Text("← VOLVER", fontSize = 14.sp)
+        OutlinedButton(onClick = onVolver, modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = SnakeLightGreen)) {
+            Text("← TORNAR", fontSize = 14.sp)
         }
     }
 }
 
 // =============================================================================
-// COMPOSABLE STATELESS: SeccionAlias
-// FIX [A]: placeholder visible con el texto de ejemplo "Jugador"
+// STATELESS: SeccionAlias
 // =============================================================================
 @Composable
-private fun SeccionAlias(
-    alias: String,
-    onAliasChange: (String) -> Unit
-) {
+private fun SeccionAlias(alias: String, onAliasChange: (String) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        EtiquetaSeccion("👤  Alias del jugador")
+        EtiquetaSeccion("👤  Àlies del jugador")
         OutlinedTextField(
             value = alias,
             onValueChange = onAliasChange,
-            // FIX [A]: placeholder visible cuando el campo está vacío
-            placeholder = { Text("Ej: Jugador", color = Color.White.copy(alpha = 0.3f)) },
-            label = { Text("Alias", color = SnakeLightGreen.copy(alpha = 0.7f)) },
+            placeholder = { Text("Ex: Jugador", color = Color.White.copy(alpha = 0.3f)) },
+            label = { Text("Àlies", color = SnakeLightGreen.copy(alpha = 0.7f)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             colors = camposColores()
@@ -177,20 +147,14 @@ private fun SeccionAlias(
 }
 
 // =============================================================================
-// COMPOSABLE STATELESS: SeccionTamano
+// STATELESS: SeccionTamano
 // =============================================================================
 @Composable
-private fun SeccionTamano(
-    tamanoSeleccionado: String,
-    onTamanoChange: (String) -> Unit
-) {
+private fun SeccionTamano(tamanoSeleccionado: String, onTamanoChange: (String) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        EtiquetaSeccion("📐  Tamaño de la parrilla")
+        EtiquetaSeccion("📐  Mida de la parrilla")
         TamanoParrilla.entries.forEach { tamano ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 RadioButton(
                     selected = tamanoSeleccionado == tamano.name,
                     onClick = { onTamanoChange(tamano.name) },
@@ -198,11 +162,8 @@ private fun SeccionTamano(
                 )
                 Column {
                     Text(tamano.etiqueta, color = Color.White, fontSize = 14.sp)
-                    Text(
-                        "${tamano.filas}×${tamano.columnas} casillas",
-                        color = Color.White.copy(alpha = 0.4f),
-                        fontSize = 11.sp
-                    )
+                    Text("${tamano.filas}×${tamano.columnas} caselles",
+                        color = Color.White.copy(alpha = 0.4f), fontSize = 11.sp)
                 }
             }
         }
@@ -210,8 +171,7 @@ private fun SeccionTamano(
 }
 
 // =============================================================================
-// COMPOSABLE STATELESS: SeccionTiempo
-// FIX [B]: muestra error si el tiempo no es numérico cuando está activo
+// STATELESS: SeccionTiempo
 // =============================================================================
 @Composable
 private fun SeccionTiempo(
@@ -222,35 +182,26 @@ private fun SeccionTiempo(
     onTiempoTextoChange: (String) -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        EtiquetaSeccion("⏱️  Control de tiempo")
-
+        EtiquetaSeccion("⏱️  Control del temps")
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Checkbox(
-                checked = controlTiempo,
-                onCheckedChange = onControlTiempoChange,
-                colors = CheckboxDefaults.colors(checkedColor = SnakeGreen)
-            )
-            Text("Activar tiempo máximo", color = Color.White, fontSize = 14.sp)
+            Checkbox(checked = controlTiempo, onCheckedChange = onControlTiempoChange,
+                colors = CheckboxDefaults.colors(checkedColor = SnakeGreen))
+            Text("Activar temps màxim", color = Color.White, fontSize = 14.sp)
         }
-
         OutlinedTextField(
             value = tiempoMaximoTexto,
             onValueChange = onTiempoTextoChange,
-            label = { Text("Tiempo máximo (segundos)", color = SnakeLightGreen.copy(alpha = 0.7f)) },
+            label = { Text("Temps màxim (segons)", color = SnakeLightGreen.copy(alpha = 0.7f)) },
             modifier = Modifier.fillMaxWidth(),
             enabled = controlTiempo,
             singleLine = true,
             isError = errorTiempo != null,
-            supportingText = errorTiempo?.let {
-                { Text(it, color = Color(0xFFEF5350), fontSize = 12.sp) }
-            },
+            supportingText = errorTiempo?.let { { Text(it, color = Color(0xFFEF5350), fontSize = 12.sp) } },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             colors = camposColores()
         )
     }
 }
-
-// ── Helpers compartidos ───────────────────────────────────────────────────────
 
 @Composable
 private fun EtiquetaSeccion(texto: String) {
