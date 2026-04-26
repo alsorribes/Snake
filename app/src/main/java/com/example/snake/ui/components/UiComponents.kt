@@ -5,8 +5,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+// FIX [E3]: usar SnakeGreen de SnakeColors en lugar de Color(0xFF4CAF50) hardcoded
+import com.example.snake.ui.theme.SnakeGreen
 
 /**
  * Fondo decorativo compartido entre pantallas.
@@ -16,7 +17,7 @@ import androidx.compose.ui.unit.dp
 fun GridBackground() {
     Canvas(modifier = Modifier.fillMaxSize()) {
         val cellSize  = 40.dp.toPx()
-        val lineColor = Color(0xFF4CAF50).copy(alpha = 0.05f)
+        val lineColor = SnakeGreen.copy(alpha = 0.05f)
 
         var x = 0f
         while (x < size.width) {

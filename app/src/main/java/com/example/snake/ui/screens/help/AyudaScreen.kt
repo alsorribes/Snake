@@ -18,13 +18,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.snake.ui.components.GridBackground
-
-private val SnakeGreen      = Color(0xFF4CAF50)
-private val SnakeDarkGreen  = Color(0xFF2E7D32)
-private val SnakeLightGreen = Color(0xFF81C784)
-private val BackgroundDark  = Color(0xFF1B1B2F)
-private val SurfaceCard     = Color(0xFF252540)
-// FIX [H]: eliminada AccentYellow que nunca se usaba (warning de compilador)
+// FIX [E1]: colores importados desde SnakeColors en lugar de redefinirlos localmente
+import com.example.snake.ui.theme.BackgroundDark
+import com.example.snake.ui.theme.SnakeDarkGreen
+import com.example.snake.ui.theme.SnakeGreen
+import com.example.snake.ui.theme.SnakeLightGreen
+import com.example.snake.ui.theme.SurfaceCard
 
 @Composable
 fun AyudaScreen(
@@ -48,11 +47,11 @@ fun AyudaScreen(
             Text("❓", fontSize = 48.sp)
             Spacer(Modifier.height(8.dp))
             Text(
-                text = "AYUDA", fontSize = 32.sp, fontWeight = FontWeight.ExtraBold,
+                text = "AJUDA", fontSize = 32.sp, fontWeight = FontWeight.ExtraBold,
                 color = SnakeGreen, letterSpacing = 6.sp
             )
             Text(
-                text = "Cómo jugar al Snake", fontSize = 13.sp,
+                text = "Com jugar al Snake", fontSize = 13.sp,
                 color = SnakeLightGreen.copy(alpha = 0.6f), letterSpacing = 1.5.sp
             )
 
@@ -60,25 +59,25 @@ fun AyudaScreen(
             MiniBoard()
             Spacer(Modifier.height(28.dp))
 
-            HelpCard("🐍", "La Serpiente",
-                "Controla la serpiente usando los botones de dirección. " +
-                        "Empieza con 3 segmentos en el centro del tablero, moviéndose hacia la derecha.")
+            HelpCard("🐍", "La Serp",
+                "Controla la serp usant els botons de direcció. " +
+                        "Comença amb 3 segments al centre del tauler, movent-se cap a la dreta.")
             Spacer(Modifier.height(12.dp))
-            HelpCard("🍎", "Come Manzanas",
-                "Cada vez que la cabeza toca una manzana, crece un segmento y " +
-                        "aparece una nueva manzana en una posición aleatoria libre.")
+            HelpCard("🍎", "Menja Pomes",
+                "Cada cop que el cap toca una poma, creix un segment i " +
+                        "apareix una nova poma en una posició aleatòria lliure.")
             Spacer(Modifier.height(12.dp))
             HelpCard("💀", "Game Over",
-                "La partida termina si la serpiente choca con una pared o con su propio " +
-                        "cuerpo. ¡Los giros de 180° no están permitidos!")
+                "La partida acaba si la serp xoca amb una paret o amb el seu propi " +
+                        "cos. Els girs de 180° no estan permesos!")
             Spacer(Modifier.height(12.dp))
-            HelpCard("⏱️", "Control de Tiempo",
-                "Si activas el control de tiempo en Configuración, tendrás un tiempo máximo. " +
-                        "El temporizador se muestra en rojo durante el juego.")
+            HelpCard("⏱️", "Control del Temps",
+                "Si actives el control del temps a Configuració, tindràs un temps màxim. " +
+                        "El temporitzador es mostra en vermell durant el joc.")
             Spacer(Modifier.height(12.dp))
-            HelpCard("🏆", "Victoria",
-                "Ganas si la serpiente ocupa todas las casillas del tablero. " +
-                        "Al terminar podrás enviar tu resultado por email.")
+            HelpCard("🏆", "Victòria",
+                "Guanyes si la serp ocupa totes les caselles del tauler. " +
+                        "En acabar podràs enviar el teu resultat per email.")
 
             Spacer(Modifier.height(32.dp))
             ConfigInfoCard()
@@ -94,10 +93,11 @@ fun AyudaScreen(
                     onClick = onIrAlJuego,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = Color.White),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent, contentColor = Color.White),
                     elevation = ButtonDefaults.buttonElevation(0.dp)
                 ) {
-                    Text("▶  IR AL JUEGO", fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
+                    Text("▶  ANAR AL JOC", fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
                         letterSpacing = 1.sp, modifier = Modifier.padding(vertical = 6.dp))
                 }
             }
@@ -111,7 +111,7 @@ fun AyudaScreen(
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = SnakeLightGreen),
                 border = androidx.compose.foundation.BorderStroke(1.dp, SnakeLightGreen.copy(alpha = 0.4f))
             ) {
-                Text("← VOLVER AL MENÚ", fontSize = 14.sp, fontWeight = FontWeight.Medium,
+                Text("← TORNAR AL MENÚ", fontSize = 14.sp, fontWeight = FontWeight.Medium,
                     letterSpacing = 1.sp, modifier = Modifier.padding(vertical = 4.dp))
             }
 
@@ -145,7 +145,10 @@ private fun MiniBoard() {
                             cell in appleCells -> Color(0xFFE53935)
                             else               -> Color(0xFF1A1A2E)
                         }
-                        Box(modifier = Modifier.size(24.dp).clip(RoundedCornerShape(4.dp)).background(color))
+                        Box(modifier = Modifier
+                            .size(24.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(color))
                     }
                 }
             }
@@ -155,11 +158,19 @@ private fun MiniBoard() {
 
 @Composable
 private fun HelpCard(emoji: String, title: String, body: String) {
-    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceCard)) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = SurfaceCard)
+    ) {
         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.Top) {
-            Box(modifier = Modifier.size(44.dp).clip(CircleShape)
-                .background(SnakeGreen.copy(alpha = 0.15f)), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(CircleShape)
+                    .background(SnakeGreen.copy(alpha = 0.15f)),
+                contentAlignment = Alignment.Center
+            ) {
                 Text(emoji, fontSize = 22.sp)
             }
             Spacer(Modifier.width(14.dp))
@@ -175,25 +186,30 @@ private fun HelpCard(emoji: String, title: String, body: String) {
 @Composable
 private fun ConfigInfoCard() {
     Card(
-        modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(14.dp),
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = SnakeDarkGreen.copy(alpha = 0.25f)),
         border = CardDefaults.outlinedCardBorder().copy(
-            brush = Brush.horizontalGradient(listOf(SnakeGreen.copy(0.3f), SnakeLightGreen.copy(0.3f))))
+            brush = Brush.horizontalGradient(
+                listOf(SnakeGreen.copy(0.3f), SnakeLightGreen.copy(0.3f))))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text("⚙️  Opciones de Configuración", fontSize = 14.sp,
+            Text("⚙️  Opcions de Configuració", fontSize = 14.sp,
                 fontWeight = FontWeight.Bold, color = SnakeLightGreen)
             Spacer(Modifier.height(10.dp))
-            ConfigOption("👤", "Alias del jugador")
-            ConfigOption("📐", "Tamaño de parrilla: Pequeña · Mediana · Grande")
-            ConfigOption("⏱️", "Control de tiempo con límite configurable")
+            ConfigOption("👤", "Àlies del jugador")
+            ConfigOption("📐", "Mida de la parrilla: Petita · Mitjana · Gran")
+            ConfigOption("⏱️", "Control del temps amb límit configurable")
         }
     }
 }
 
 @Composable
 private fun ConfigOption(emoji: String, text: String) {
-    Row(modifier = Modifier.padding(vertical = 3.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        modifier = Modifier.padding(vertical = 3.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         Text(emoji, fontSize = 14.sp)
         Spacer(Modifier.width(8.dp))
         Text(text, fontSize = 13.sp, color = Color.White.copy(alpha = 0.7f))

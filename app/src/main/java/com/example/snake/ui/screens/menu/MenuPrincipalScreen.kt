@@ -17,13 +17,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.snake.ui.components.GridBackground
-
-private val SnakeGreen      = Color(0xFF4CAF50)
-private val SnakeDarkGreen  = Color(0xFF2E7D32)
-private val SnakeLightGreen = Color(0xFF81C784)
-// FIX [I]: eliminadas SnakeAccent y BackgroundDark que no se usaban directamente aquí
-private val BackgroundDark  = Color(0xFF1B1B2F)
-private val SurfaceCard     = Color(0xFF252540)
+// FIX [E2]: colores importados desde SnakeColors en lugar de redefinirlos localmente
+import com.example.snake.ui.theme.BackgroundDark
+import com.example.snake.ui.theme.SnakeDarkGreen
+import com.example.snake.ui.theme.SnakeGreen
+import com.example.snake.ui.theme.SnakeLightGreen
+import com.example.snake.ui.theme.SurfaceCard
 
 @Composable
 fun MenuPrincipalScreen(
@@ -52,28 +51,36 @@ fun MenuPrincipalScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text(text = "SNAKE", fontSize = 52.sp, fontWeight = FontWeight.ExtraBold,
-                color = SnakeGreen, letterSpacing = 8.sp)
-            Text(text = "El juego de la serpiente", fontSize = 14.sp,
+            Text(
+                text = "SNAKE", fontSize = 52.sp, fontWeight = FontWeight.ExtraBold,
+                color = SnakeGreen, letterSpacing = 8.sp
+            )
+            Text(
+                text = "El joc de la serp", fontSize = 14.sp,
                 color = SnakeLightGreen.copy(alpha = 0.7f),
-                textAlign = TextAlign.Center, letterSpacing = 2.sp)
+                textAlign = TextAlign.Center, letterSpacing = 2.sp
+            )
 
             Spacer(modifier = Modifier.height(56.dp))
 
-            SnakeMenuButton("▶  EMPEZAR PARTIDA", onEmpezarPartida, primary = true)
+            SnakeMenuButton("▶  COMENÇAR PARTIDA", onEmpezarPartida, primary = true)
             Spacer(modifier = Modifier.height(16.dp))
-            SnakeMenuButton("❓  AYUDA", onAyuda, primary = false)
+            SnakeMenuButton("❓  AJUDA", onAyuda, primary = false)
             Spacer(modifier = Modifier.height(16.dp))
-            SnakeMenuButton("✕  SALIR", onSalir, primary = false, tint = Color(0xFFEF5350))
+            SnakeMenuButton("✕  SORTIR", onSalir, primary = false, tint = Color(0xFFEF5350))
 
             Spacer(modifier = Modifier.height(48.dp))
 
-            Row(verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
                 Text("🍎", fontSize = 18.sp)
                 Spacer(Modifier.width(6.dp))
-                Text("Come manzanas · Crece · Sobrevive", fontSize = 12.sp,
-                    color = Color.White.copy(alpha = 0.35f), textAlign = TextAlign.Center)
+                Text(
+                    "Menja pomes · Creix · Sobreviu", fontSize = 12.sp,
+                    color = Color.White.copy(alpha = 0.35f), textAlign = TextAlign.Center
+                )
             }
         }
     }
@@ -91,9 +98,15 @@ private fun SnakeMenuButton(
     else
         Brush.horizontalGradient(listOf(SurfaceCard, SurfaceCard))
 
-    Box(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(backgroundBrush)) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(backgroundBrush)
+    ) {
         Button(
-            onClick = onClick, modifier = Modifier.fillMaxWidth(),
+            onClick = onClick,
+            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(14.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.Transparent,
@@ -101,8 +114,10 @@ private fun SnakeMenuButton(
             ),
             elevation = ButtonDefaults.buttonElevation(0.dp)
         ) {
-            Text(text, fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
-                letterSpacing = 1.sp, modifier = Modifier.padding(vertical = 6.dp))
+            Text(
+                text, fontSize = 15.sp, fontWeight = FontWeight.SemiBold,
+                letterSpacing = 1.sp, modifier = Modifier.padding(vertical = 6.dp)
+            )
         }
     }
 }

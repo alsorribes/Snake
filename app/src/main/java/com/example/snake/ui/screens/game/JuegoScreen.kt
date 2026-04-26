@@ -33,14 +33,14 @@ import com.example.snake.model.Casilla
 import com.example.snake.model.Direccion
 import com.example.snake.model.Partida
 import com.example.snake.model.Serpiente
-// FIX [E1]: colores importados desde SnakeColors — eliminada la redefinición local
 import com.example.snake.ui.theme.AppleRed
+import com.example.snake.ui.theme.BackgroundDark
 import com.example.snake.ui.theme.BoardBackground
 import com.example.snake.ui.theme.BoardGrid
 import com.example.snake.ui.theme.BtnNeutral
+import com.example.snake.ui.theme.SnakeBody
 import com.example.snake.ui.theme.SnakeDarkGreen
 import com.example.snake.ui.theme.SnakeGreen
-import com.example.snake.ui.theme.SnakeBody
 import com.example.snake.ui.theme.SnakeHead
 import com.example.snake.ui.theme.TimeNoControl
 import com.example.snake.ui.theme.TimeWithControl
@@ -55,12 +55,14 @@ fun JuegoScreen(
     val partida = uiState.partida
     if (partida == null) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("No hi ha partida en curs", style = MaterialTheme.typography.bodyLarge, color = Color.White)
+            Text("No hi ha partida en curs", style = MaterialTheme.typography.bodyLarge,
+                color = Color.White)
         }
         return
     }
 
-    val esLandscape = LocalConfiguration.current.screenWidthDp > LocalConfiguration.current.screenHeightDp
+    val esLandscape = LocalConfiguration.current.screenWidthDp >
+            LocalConfiguration.current.screenHeightDp
 
     Box(Modifier.fillMaxSize()) {
         if (esLandscape) {
@@ -79,7 +81,9 @@ private fun GameOverOverlay(mensaje: String) {
         contentAlignment = Alignment.Center
     ) {
         Box(
-            modifier = Modifier.background(Color(0xFF1B1B2F), RoundedCornerShape(20.dp))
+            // FIX [E4]: usar BackgroundDark de SnakeColors en lugar de Color(0xFF1B1B2F) hardcoded
+            modifier = Modifier
+                .background(BackgroundDark, RoundedCornerShape(20.dp))
                 .padding(horizontal = 40.dp, vertical = 28.dp),
             contentAlignment = Alignment.Center
         ) {
@@ -144,24 +148,30 @@ private fun InfoPartida(
         verticalAlignment = Alignment.CenterVertically) {
         Column {
             Text("👤 $alias", color = Color.White, fontSize = 13.sp)
-            Text("🍎 $manzanasComidas  •  🐍 $longitud seg.", color = Color.White.copy(alpha = 0.7f), fontSize = 12.sp)
+            Text("🍎 $manzanasComidas  •  🐍 $longitud seg.",
+                color = Color.White.copy(alpha = 0.7f), fontSize = 12.sp)
         }
         Column(horizontalAlignment = Alignment.End) {
             Text(labelTiempo, color = colorTiempo, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            if (enPausa) Text("PAUSAT", color = Color.Yellow, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            if (enPausa) Text("PAUSAT", color = Color.Yellow, fontSize = 11.sp,
+                fontWeight = FontWeight.Bold)
         }
     }
 }
 
 @Composable
-fun TableroJuego(filas: Int, columnas: Int, serpiente: Serpiente, manzana: Casilla, modifier: Modifier = Modifier) {
+fun TableroJuego(
+    filas: Int, columnas: Int, serpiente: Serpiente,
+    manzana: Casilla, modifier: Modifier = Modifier
+) {
     Canvas(modifier = modifier) {
         val cellW = size.width / columnas
         val cellH = size.height / filas
         drawRect(color = BoardBackground, size = size)
         for (f in 0..filas)    drawLine(BoardGrid, Offset(0f, f * cellH), Offset(size.width, f * cellH), 1f)
         for (c in 0..columnas) drawLine(BoardGrid, Offset(c * cellW, 0f), Offset(c * cellW, size.height), 1f)
-        drawRect(AppleRed, Offset(manzana.columna * cellW + 2f, manzana.fila * cellH + 2f), Size(cellW - 4f, cellH - 4f))
+        drawRect(AppleRed, Offset(manzana.columna * cellW + 2f, manzana.fila * cellH + 2f),
+            Size(cellW - 4f, cellH - 4f))
         serpiente.segmentos.forEachIndexed { index, casilla ->
             val color  = if (index == 0) SnakeHead else SnakeBody
             val margin = if (index == 0) 1f else 2f
@@ -172,18 +182,27 @@ fun TableroJuego(filas: Int, columnas: Int, serpiente: Serpiente, manzana: Casil
 }
 
 @Composable
-private fun BotonPausa(enPausa: Boolean, onTogglePausa: () -> Unit, modifier: Modifier = Modifier.fillMaxWidth()) {
+private fun BotonPausa(
+    enPausa: Boolean, onTogglePausa: () -> Unit,
+    modifier: Modifier = Modifier.fillMaxWidth()
+) {
     Button(onClick = onTogglePausa, modifier = modifier,
-        colors = ButtonDefaults.buttonColors(containerColor = if (enPausa) SnakeGreen else BtnNeutral)) {
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if (enPausa) SnakeGreen else BtnNeutral)) {
         Text(if (enPausa) "▶  REANUDAR" else "⏸  PAUSAR", fontWeight = FontWeight.SemiBold)
     }
 }
 
 @Composable
-private fun ControlesDireccion(onCambiarDireccion: (Direccion) -> Unit, tamanoBoton: Dp = 72.dp) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+private fun ControlesDireccion(
+    onCambiarDireccion: (Direccion) -> Unit,
+    tamanoBoton: Dp = 72.dp
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(6.dp)) {
         BotonDireccion("▲", Direccion.ARRIBA,    onCambiarDireccion, Modifier.size(tamanoBoton))
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically) {
             BotonDireccion("◀", Direccion.IZQUIERDA, onCambiarDireccion, Modifier.size(tamanoBoton))
             Box(Modifier.size(tamanoBoton))
             BotonDireccion("▶", Direccion.DERECHA,   onCambiarDireccion, Modifier.size(tamanoBoton))
@@ -193,7 +212,10 @@ private fun ControlesDireccion(onCambiarDireccion: (Direccion) -> Unit, tamanoBo
 }
 
 @Composable
-private fun BotonDireccion(etiqueta: String, direccion: Direccion, onClick: (Direccion) -> Unit, modifier: Modifier) {
+private fun BotonDireccion(
+    etiqueta: String, direccion: Direccion,
+    onClick: (Direccion) -> Unit, modifier: Modifier
+) {
     Button(onClick = { onClick(direccion) }, modifier = modifier,
         colors = ButtonDefaults.buttonColors(containerColor = SnakeDarkGreen)) {
         Text(etiqueta, fontSize = 22.sp, color = Color.White)

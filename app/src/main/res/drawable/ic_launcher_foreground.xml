@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    FIX [F3][P1]: eliminado el path de fondo del foreground.
+    Con iconos adaptativos, el sistema aplica ic_launcher_background.xml como fondo.
+    El foreground solo debe contener el contenido visual (la serpiente y la manzana).
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-
-    <!-- Fondo oscuro del juego -->
-    <path
-        android:fillColor="#1B1B2F"
-        android:pathData="M0,0 L108,0 L108,108 L0,108 Z" />
 
     <!-- Cuadrícula sutil verde -->
     <path android:strokeColor="#334CAF50" android:strokeWidth="0.6" android:fillColor="#00000000"
@@ -32,49 +32,40 @@
     <path android:strokeColor="#334CAF50" android:strokeWidth="0.6" android:fillColor="#00000000"
         android:pathData="M0,90 L108,90" />
 
-    <!-- Cola de la serpiente (segmento 1) — rectángulo con esquinas redondeadas usando path -->
-    <path
-        android:fillColor="#81C784"
+    <!-- Cola (segmento 1) -->
+    <path android:fillColor="#81C784"
         android:pathData="M21,57 Q18,57 18,54 L18,50 Q18,47 21,47 L29,47 Q32,47 32,50 L32,54 Q32,57 29,57 Z" />
 
     <!-- Cuerpo (segmento 2) -->
-    <path
-        android:fillColor="#81C784"
+    <path android:fillColor="#81C784"
         android:pathData="M39,57 Q36,57 36,54 L36,50 Q36,47 39,47 L47,47 Q50,47 50,50 L50,54 Q50,57 47,57 Z" />
 
-    <!-- Cuerpo (segmento 3) — más claro -->
-    <path
-        android:fillColor="#66BB6A"
+    <!-- Cuerpo (segmento 3) -->
+    <path android:fillColor="#66BB6A"
         android:pathData="M39,39 Q36,39 36,36 L36,32 Q36,29 39,29 L47,29 Q50,29 50,32 L50,36 Q50,39 47,39 Z" />
 
     <!-- Cuerpo (segmento 4) -->
-    <path
-        android:fillColor="#4CAF50"
+    <path android:fillColor="#4CAF50"
         android:pathData="M57,39 Q54,39 54,36 L54,32 Q54,29 57,29 L65,29 Q68,29 68,32 L68,36 Q68,39 65,39 Z" />
 
-    <!-- Cabeza de la serpiente — más grande -->
-    <path
-        android:fillColor="#4CAF50"
+    <!-- Cabeza -->
+    <path android:fillColor="#4CAF50"
         android:pathData="M57,59 Q54,59 54,56 L54,50 Q54,47 57,47 L67,47 Q70,47 70,50 L70,56 Q70,59 67,59 Z" />
 
     <!-- Ojo izquierdo -->
-    <path
-        android:fillColor="#1B1B2F"
+    <path android:fillColor="#1B1B2F"
         android:pathData="M59,51 m-2,0 a2,2 0 1,0 4,0 a2,2 0 1,0 -4,0" />
 
     <!-- Ojo derecho -->
-    <path
-        android:fillColor="#1B1B2F"
+    <path android:fillColor="#1B1B2F"
         android:pathData="M65,51 m-2,0 a2,2 0 1,0 4,0 a2,2 0 1,0 -4,0" />
 
-    <!-- Manzana roja — círculo -->
-    <path
-        android:fillColor="#E53935"
+    <!-- Manzana roja -->
+    <path android:fillColor="#E53935"
         android:pathData="M79,36 m-9,0 a9,9 0 1,0 18,0 a9,9 0 1,0 -18,0" />
 
-    <!-- Hojita de la manzana -->
-    <path
-        android:fillColor="#4CAF50"
+    <!-- Hojita -->
+    <path android:fillColor="#4CAF50"
         android:pathData="M79,27 Q82,22 85,25 Q82,24 79,27 Z" />
 
 </vector>

@@ -40,15 +40,11 @@ import com.example.snake.ui.theme.BtnError
 import com.example.snake.ui.theme.SnakeDarkGreen
 import com.example.snake.ui.theme.SnakeGreen
 import com.example.snake.ui.theme.SnakeLightGreen
-import com.example.snake.ui.theme.SurfaceCard
+// FIX [E5]: eliminado import de SurfaceCard que no se usaba (generaba warning)
 import com.example.snake.viewmodel.GameUiState
 
 private val EMAIL_REGEX = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
 
-// =============================================================================
-// FIX [P2]: ResultadosScreen ahora usa el mismo tema oscuro que el resto de pantallas.
-// Antes tenía fondo blanco de Material3 por defecto, inconsistente con el diseño.
-// =============================================================================
 @Composable
 fun ResultadosScreen(
     uiState: GameUiState,
@@ -59,7 +55,6 @@ fun ResultadosScreen(
 ) {
     val log = uiState.log
 
-    // Estado de sin log — pantalla mínima también con tema oscuro
     if (log == null) {
         Box(
             modifier = Modifier.fillMaxSize().background(BackgroundDark),
@@ -93,10 +88,7 @@ fun ResultadosScreen(
         try { focusRequester.requestFocus() } catch (_: Exception) { }
     }
 
-    // FIX [P2]: fondo oscuro + cuadrícula decorativa como el resto de pantallas
-    Box(
-        modifier = Modifier.fillMaxSize().background(BackgroundDark)
-    ) {
+    Box(modifier = Modifier.fillMaxSize().background(BackgroundDark)) {
         GridBackground()
 
         Column(
@@ -106,67 +98,37 @@ fun ResultadosScreen(
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            // Cabecera
-            Text(
-                text = "🏁  Resultats",
-                fontSize = 26.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = SnakeGreen
-            )
-            Text(
-                text = "Resum de la partida",
-                fontSize = 13.sp,
-                color = Color.White.copy(alpha = 0.5f)
-            )
+            Text("🏁  Resultats", fontSize = 26.sp, fontWeight = FontWeight.ExtraBold, color = SnakeGreen)
+            Text("Resum de la partida", fontSize = 13.sp, color = Color.White.copy(alpha = 0.5f))
 
-            // Fecha y hora
             EtiquetaResultado("📅  Dia i hora de finalització")
             OutlinedTextField(
-                value = log.fechaHoraFormateada(),
-                onValueChange = {},
-                readOnly = true,
-                modifier = Modifier.fillMaxWidth(),
-                colors = camposColores()
+                value = log.fechaHoraFormateada(), onValueChange = {},
+                readOnly = true, modifier = Modifier.fillMaxWidth(), colors = camposColores()
             )
 
-            // Log de partida (editable — se envía como cuerpo del email)
             EtiquetaResultado("📋  Valors del log")
             OutlinedTextField(
-                value = textoLog,
-                onValueChange = { textoLog = it },
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 5,
-                colors = camposColores()
+                value = textoLog, onValueChange = { textoLog = it },
+                modifier = Modifier.fillMaxWidth(), minLines = 5, colors = camposColores()
             )
 
-            // Email destinatario con foco automático
             EtiquetaResultado("📧  E-mail destinatari")
             OutlinedTextField(
                 value = email,
-                onValueChange = {
-                    email = it
-                    emailError = null
-                    onEmailCambiado(it)
-                },
+                onValueChange = { email = it; emailError = null; onEmailCambiado(it) },
                 modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
                 singleLine = true,
                 isError = emailError != null,
-                supportingText = emailError?.let {
-                    { Text(it, color = BtnError, fontSize = 12.sp) }
-                },
+                supportingText = emailError?.let { { Text(it, color = BtnError, fontSize = 12.sp) } },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 colors = camposColores()
             )
 
-            // Botones de acción
             Button(
                 onClick = {
-                    if (!EMAIL_REGEX.matches(email)) {
-                        emailError = "Introdueix un email vàlid"
-                    } else {
-                        emailError = null
-                        onEnviarEmail(email)
-                    }
+                    if (!EMAIL_REGEX.matches(email)) emailError = "Introdueix un email vàlid"
+                    else { emailError = null; onEnviarEmail(email) }
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = SnakeDarkGreen),
@@ -177,8 +139,7 @@ fun ResultadosScreen(
             }
 
             OutlinedButton(
-                onClick = onNuevaPartida,
-                modifier = Modifier.fillMaxWidth(),
+                onClick = onNuevaPartida, modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = SnakeLightGreen),
                 border = androidx.compose.foundation.BorderStroke(1.dp, SnakeLightGreen.copy(0.4f))
@@ -187,8 +148,7 @@ fun ResultadosScreen(
             }
 
             Button(
-                onClick = onSalir,
-                modifier = Modifier.fillMaxWidth(),
+                onClick = onSalir, modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = BtnDanger),
                 shape = RoundedCornerShape(12.dp)
             ) {
