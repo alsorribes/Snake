@@ -79,14 +79,12 @@ fun JuegoScreen(
             JuegoPortrait(partida, uiState.enPausa, onCambiarDireccion, onTogglePausa)
         }
 
-        uiState.mensajeGameOver?.let { mensaje ->
+        if (uiState.mensajeGameOver != null) {
             FinPartidaOverlay(
-                mensaje = mensaje,
+                mensaje = uiState.mensajeGameOver,
                 onIrAResultados = onIrAResultados
             )
-        }
-
-        if (uiState.enPausa) {
+        } else if (uiState.enPausa) {
             PausaOverlay(onReanudar = onTogglePausa)
         }
     }
@@ -210,7 +208,7 @@ private fun JuegoPortrait(
             BotonPausa(enPausa, onTogglePausa)
         }
 
-        ControlesDireccion(onCambiarDireccion, tamanoBoton = 72.dp)
+        ControlesDireccion(onCambiarDireccion, tamanoBoton = 88.dp)
     }
 }
 
@@ -258,7 +256,7 @@ private fun JuegoLandscape(
                 BotonPausa(enPausa, onTogglePausa, Modifier.fillMaxWidth())
             }
 
-            ControlesDireccion(onCambiarDireccion, tamanoBoton = 52.dp)
+            ControlesDireccion(onCambiarDireccion, tamanoBoton = 64.dp)
         }
     }
 }
@@ -420,11 +418,11 @@ private fun ControlesDireccion(
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(6.dp)
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         BotonDireccion("▲", Direccion.ARRIBA, onCambiarDireccion, Modifier.size(tamanoBoton))
         Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             BotonDireccion("◀", Direccion.IZQUIERDA, onCambiarDireccion, Modifier.size(tamanoBoton))

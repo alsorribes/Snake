@@ -63,6 +63,8 @@ class GameViewModel : ViewModel() {
     }
 
     fun togglePausa() {
+        val partida = _uiState.value.partida
+        if (partida?.haTerminado == true) return
         if (_uiState.value.enPausa) reanudar() else pausar()
     }
 
