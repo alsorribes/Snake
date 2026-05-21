@@ -76,7 +76,7 @@ fun MenuPrincipalScreen(
             SnakeMenuButton("❓  AJUDA", onAyuda, primary = false)
             Spacer(modifier = Modifier.height(16.dp))
             // FIX [F5]: usar BtnError de SnakeColors en lugar de Color(0xFFEF5350) hardcoded
-            SnakeMenuButton("✕  SORTIR", onSalir, primary = false, tint = BtnError)
+            SnakeMenuButton("❌  SORTIR", onSalir, primary = false, tint = BtnError)
 
             Spacer(modifier = Modifier.height(48.dp))
 

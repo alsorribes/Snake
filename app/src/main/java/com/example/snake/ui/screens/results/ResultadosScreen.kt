@@ -81,7 +81,7 @@ fun ResultadosScreen(
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = SnakeDarkGreen)
                 ) {
-                    Text("← Nova partida")
+                    Text("◀ Nova partida")
                 }
             }
         }
@@ -223,7 +223,7 @@ fun ResultadosScreen(
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(
-                    text = "✕  Sortir",
+                    text = "❌  Sortir",
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(vertical = 4.dp)
                 )

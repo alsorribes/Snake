@@ -115,7 +115,7 @@ fun ConfiguracionScreen(
 
         OutlinedButton(onClick = onVolver, modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.outlinedButtonColors(contentColor = SnakeLightGreen)) {
-            Text("← TORNAR", fontSize = 14.sp)
+            Text("◀ TORNAR", fontSize = 14.sp)
         }
     }
 }

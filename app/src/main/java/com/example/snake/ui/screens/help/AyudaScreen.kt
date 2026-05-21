@@ -116,7 +116,7 @@ fun AyudaScreen(
                 border = androidx.compose.foundation.BorderStroke(
                     1.dp, SnakeLightGreen.copy(alpha = 0.4f))
             ) {
-                Text("← TORNAR AL MENÚ", fontSize = 14.sp, fontWeight = FontWeight.Medium,
+                Text("◀ TORNAR AL MENÚ", fontSize = 14.sp, fontWeight = FontWeight.Medium,
                     letterSpacing = 1.sp, modifier = Modifier.padding(vertical = 4.dp))
             }
 
