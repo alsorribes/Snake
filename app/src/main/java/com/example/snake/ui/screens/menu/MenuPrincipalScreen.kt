@@ -32,6 +32,8 @@ import com.example.snake.ui.theme.SurfaceCard
 @Composable
 fun MenuPrincipalScreen(
     onEmpezarPartida: () -> Unit,
+    onConfigurar: () -> Unit,
+    onRanquing: () -> Unit,
     onAyuda: () -> Unit,
     onSalir: () -> Unit
 ) {
@@ -56,7 +58,6 @@ fun MenuPrincipalScreen(
         GridBackground()
 
         if (esLandscape) {
-            // ── Landscape: dos columnes, sense scroll ──────────────────────────
             Row(
                 modifier = Modifier
                     .fillMaxSize()
@@ -106,13 +107,14 @@ fun MenuPrincipalScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     SnakeMenuButton(stringResource(R.string.menu_empezar), onEmpezarPartida, primary = true)
+                    SnakeMenuButton(stringResource(R.string.menu_configurar), onConfigurar, primary = false)
+                    SnakeMenuButton(stringResource(R.string.menu_ranquing), onRanquing, primary = false)
                     SnakeMenuButton(stringResource(R.string.menu_ayuda), onAyuda, primary = false)
                     SnakeMenuButton(stringResource(R.string.menu_salir), onSalir, primary = false, tint = BtnError)
                 }
             }
 
         } else {
-            // ── Portrait: columna centrada amb scroll ──────────────────────────
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -140,6 +142,10 @@ fun MenuPrincipalScreen(
                 )
                 Spacer(Modifier.height(56.dp))
                 SnakeMenuButton(stringResource(R.string.menu_empezar), onEmpezarPartida, primary = true)
+                Spacer(Modifier.height(16.dp))
+                SnakeMenuButton(stringResource(R.string.menu_configurar), onConfigurar, primary = false)
+                Spacer(Modifier.height(16.dp))
+                SnakeMenuButton(stringResource(R.string.menu_ranquing), onRanquing, primary = false)
                 Spacer(Modifier.height(16.dp))
                 SnakeMenuButton(stringResource(R.string.menu_ayuda), onAyuda, primary = false)
                 Spacer(Modifier.height(16.dp))

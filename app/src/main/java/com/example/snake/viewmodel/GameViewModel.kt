@@ -1,7 +1,10 @@
 package com.example.snake.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.snake.data.PartidaRepository
+import com.example.snake.data.PreferenciasRepository
 import com.example.snake.model.ConfiguracionPartida
 import com.example.snake.model.Direccion
 import com.example.snake.model.EstadoJuego
@@ -13,8 +16,11 @@ import com.example.snake.model.TIEMPO_MAXIMO_DEFECTO_SEG
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Date
@@ -24,18 +30,43 @@ private const val TICK_TIEMPO_MS = 1000L
 
 const val EMAIL_DEFECTO = "profesor@example.com"
 
-class GameViewModel : ViewModel() {
+class GameViewModel(
+    private val preferenciasRepo: PreferenciasRepository,
+    private val partidaRepo: PartidaRepository
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GameUiState())
     val uiState: StateFlow<GameUiState> = _uiState.asStateFlow()
 
-    private var direccionPendiente: Direccion = Direccion.DERECHA
+    val historial: StateFlow<List<LogPartida>> = partidaRepo.historial
+        .stateIn(
+            scope        = viewModelScope,
+            started      = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList()
+        )
 
+    private var direccionPendiente: Direccion = Direccion.DERECHA
     private var jobJuego:  Job? = null
     private var jobTiempo: Job? = null
 
     @Volatile
     private var partidaFinalizada = false
+
+    init {
+        viewModelScope.launch {
+            val config = preferenciasRepo.configuracion.first()
+            _uiState.update {
+                it.copy(
+                    configuracion = ConfiguracionUiState(
+                        alias             = config.alias,
+                        tamanoParrilla    = config.tamanoParrilla,
+                        controlTiempo     = config.controlTiempo,
+                        tiempoMaximoTexto = config.tiempoMaximoSeg.toString()
+                    )
+                )
+            }
+        }
+    }
 
     // ── Configuració ────────────────────────────────────────────────────────
 
@@ -63,7 +94,6 @@ class GameViewModel : ViewModel() {
         }
     }
 
-    /** Valida la configuració i, si és correcta, inicia la partida. */
     fun iniciarPartidaDesdeConfiguracion() {
         val cfg = _uiState.value.configuracion
 
@@ -84,6 +114,23 @@ class GameViewModel : ViewModel() {
             }
         }
 
+        val config = ConfiguracionPartida(
+            alias           = cfg.alias,
+            tamanoParrilla  = cfg.tamanoParrilla,
+            controlTiempo   = cfg.controlTiempo,
+            tiempoMaximoSeg = cfg.tiempoMaximoTexto.toIntOrNull() ?: TIEMPO_MAXIMO_DEFECTO_SEG
+        )
+
+        viewModelScope.launch { preferenciasRepo.guardar(config) }
+        iniciarPartida(config)
+    }
+
+    fun iniciarPartidaConPreferenciasGuardadas() {
+        val cfg = _uiState.value.configuracion
+        if (cfg.alias.isBlank()) {
+            _uiState.update { it.copy(pantallaActual = Pantalla.CONFIGURACION) }
+            return
+        }
         val config = ConfiguracionPartida(
             alias           = cfg.alias,
             tamanoParrilla  = cfg.tamanoParrilla,
@@ -131,21 +178,17 @@ class GameViewModel : ViewModel() {
 
     fun nuevaPartida() {
         cancelarJobs()
-        _uiState.update { it.copy(pantallaActual = Pantalla.CONFIGURACION) }
+        _uiState.update { it.copy(pantallaActual = Pantalla.MENU_PRINCIPAL) }
     }
 
-    fun salir() {
-        cancelarJobs()
-    }
+    fun salir() { cancelarJobs() }
 
     fun actualizarEmailDestinatario(email: String) {
         _uiState.update { it.copy(emailDestinatario = email) }
     }
 
     fun irAResultados() {
-        _uiState.update {
-            it.copy(finPartida = null, pantallaActual = Pantalla.RESULTADOS)
-        }
+        _uiState.update { it.copy(finPartida = null, pantallaActual = Pantalla.RESULTADOS) }
     }
 
     fun navegarA(pantalla: Pantalla) {
@@ -153,23 +196,17 @@ class GameViewModel : ViewModel() {
         _uiState.update { it.copy(pantallaActual = pantalla) }
     }
 
-    // ── Bucles interns ───────────────────────────────────────────────────────
+    // ── Bucles ───────────────────────────────────────────────────────────────
 
     private fun iniciarBucleJuego() {
         jobJuego = viewModelScope.launch {
-            while (true) {
-                delay(TICK_JUEGO_MS)
-                avanzarTick()
-            }
+            while (true) { delay(TICK_JUEGO_MS); avanzarTick() }
         }
     }
 
     private fun iniciarBucleTiempo() {
         jobTiempo = viewModelScope.launch {
-            while (true) {
-                delay(TICK_TIEMPO_MS)
-                aplicarTickTiempo()
-            }
+            while (true) { delay(TICK_TIEMPO_MS); aplicarTickTiempo() }
         }
     }
 
@@ -177,10 +214,8 @@ class GameViewModel : ViewModel() {
         val estado  = _uiState.value
         val partida = estado.partida ?: return
         if (partida.haTerminado || estado.enPausa) return
-
         val nuevaPartida = partida.tick(direccionPendiente)
         _uiState.update { it.copy(partida = nuevaPartida) }
-
         if (nuevaPartida.haTerminado) finalizarPartida(nuevaPartida)
     }
 
@@ -188,10 +223,8 @@ class GameViewModel : ViewModel() {
         val estado  = _uiState.value
         val partida = estado.partida ?: return
         if (partida.haTerminado || estado.enPausa) return
-
         val nuevaPartida = partida.tickTiempo()
         _uiState.update { it.copy(partida = nuevaPartida) }
-
         if (nuevaPartida.haTerminado) finalizarPartida(nuevaPartida)
     }
 
@@ -207,8 +240,7 @@ class GameViewModel : ViewModel() {
             EstadoJuego.EN_CURSO         -> return
         }
 
-        val tiempoSobrante =
-            if (partida.config.controlTiempo) partida.tiempoRestanteSeg else 0
+        val tiempoSobrante = if (partida.config.controlTiempo) partida.tiempoRestanteSeg else 0
 
         val logFinal = _uiState.value.log?.copy(
             resultado         = resultado,
@@ -219,13 +251,11 @@ class GameViewModel : ViewModel() {
             fechaHoraFin      = Date()
         )
 
-        _uiState.update {
-            it.copy(
-                partida    = partida,
-                log        = logFinal,
-                finPartida = resultado
-            )
+        logFinal?.let {
+            viewModelScope.launch { partidaRepo.guardar(it) }
         }
+
+        _uiState.update { it.copy(partida = partida, log = logFinal, finPartida = resultado) }
     }
 
     private fun pausar() {
@@ -252,33 +282,44 @@ class GameViewModel : ViewModel() {
     }
 
     companion object {
-        // Missatges d'error interns (no depenen de Context)
         const val ERROR_ALIAS_BUIT      = "alias_buit"
         const val ERROR_TIEMPO_INVALIDO = "tiempo_invalido"
+    }
+}
+
+// ── Factory ──────────────────────────────────────────────────────────────────
+
+class GameViewModelFactory(
+    private val preferenciasRepo: PreferenciasRepository,
+    private val partidaRepo: PartidaRepository
+) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        @Suppress("UNCHECKED_CAST")
+        return GameViewModel(preferenciasRepo, partidaRepo) as T
     }
 }
 
 // ── UI State ─────────────────────────────────────────────────────────────────
 
 data class GameUiState(
-    val partida:          Partida?              = null,
-    val log:              LogPartida?           = null,
-    val configuracion:    ConfiguracionUiState  = ConfiguracionUiState(),
-    val pantallaActual:   Pantalla              = Pantalla.MENU_PRINCIPAL,
-    val enPausa:          Boolean               = false,
+    val partida:           Partida?             = null,
+    val log:               LogPartida?          = null,
+    val configuracion:     ConfiguracionUiState = ConfiguracionUiState(),
+    val pantallaActual:    Pantalla             = Pantalla.MENU_PRINCIPAL,
+    val enPausa:           Boolean              = false,
     val emailDestinatario: String               = EMAIL_DEFECTO,
-    val finPartida:       ResultadoPartida?     = null
+    val finPartida:        ResultadoPartida?    = null
 )
 
 data class ConfiguracionUiState(
-    val alias:            String        = "",
-    val tamanoParrilla:   TamanoParrilla = TamanoParrilla.MEDIANA,
-    val controlTiempo:    Boolean       = false,
-    val tiempoMaximoTexto: String       = TIEMPO_MAXIMO_DEFECTO_SEG.toString(),
-    val errorAlias:       String?       = null,
-    val errorTiempo:      String?       = null
+    val alias:             String         = "",
+    val tamanoParrilla:    TamanoParrilla = TamanoParrilla.MEDIANA,
+    val controlTiempo:     Boolean        = false,
+    val tiempoMaximoTexto: String         = TIEMPO_MAXIMO_DEFECTO_SEG.toString(),
+    val errorAlias:        String?        = null,
+    val errorTiempo:       String?        = null
 )
 
 enum class Pantalla {
-    MENU_PRINCIPAL, AYUDA, CONFIGURACION, JUEGO, RESULTADOS
+    MENU_PRINCIPAL, AYUDA, CONFIGURACION, JUEGO, RESULTADOS, HISTORIAL
 }

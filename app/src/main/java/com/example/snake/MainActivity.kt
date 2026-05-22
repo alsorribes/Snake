@@ -8,14 +8,19 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import com.example.snake.data.PartidaRepository
+import com.example.snake.data.PreferenciasRepository
+import com.example.snake.data.SnakeDatabase
 import com.example.snake.navigation.AppNavigation
-import com.example.snake.ui.screens.help.AyudaScreen
 import com.example.snake.ui.screens.config.ConfiguracionScreen
 import com.example.snake.ui.screens.game.JuegoScreen
+import com.example.snake.ui.screens.help.AyudaScreen
 import com.example.snake.ui.screens.menu.MenuPrincipalScreen
+import com.example.snake.ui.screens.ranking.RankingScreen
 import com.example.snake.ui.screens.results.ResultadosScreen
 import com.example.snake.ui.theme.SnakeTheme
 import com.example.snake.viewmodel.GameViewModel
+import com.example.snake.viewmodel.GameViewModelFactory
 import com.example.snake.viewmodel.Pantalla
 
 private const val EMAIL_MIME_TYPE    = "message/rfc822"
@@ -23,7 +28,14 @@ private const val EMAIL_CHOOSER_TEXT = "Enviar log per email"
 
 class MainActivity : ComponentActivity() {
 
-    private val viewModel: GameViewModel by viewModels()
+    private val viewModel: GameViewModel by viewModels {
+        GameViewModelFactory(
+            preferenciasRepo = PreferenciasRepository(applicationContext),
+            partidaRepo      = PartidaRepository(
+                SnakeDatabase.getInstance(applicationContext).partidaDao()
+            )
+        )
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,7 +43,8 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             SnakeTheme {
-                val uiState by viewModel.uiState.collectAsState()
+                val uiState  by viewModel.uiState.collectAsState()
+                val historial by viewModel.historial.collectAsState()
 
                 AppNavigation(
                     viewModel  = viewModel,
@@ -39,7 +52,9 @@ class MainActivity : ComponentActivity() {
 
                     menuPrincipalContent = {
                         MenuPrincipalScreen(
-                            onEmpezarPartida = { viewModel.navegarA(Pantalla.CONFIGURACION) },
+                            onEmpezarPartida = { viewModel.iniciarPartidaConPreferenciasGuardadas() },
+                            onConfigurar     = { viewModel.navegarA(Pantalla.CONFIGURACION) },
+                            onRanquing       = { viewModel.navegarA(Pantalla.HISTORIAL) },
                             onAyuda          = { viewModel.navegarA(Pantalla.AYUDA) },
                             onSalir          = { finalizarApp() }
                         )
@@ -87,6 +102,13 @@ class MainActivity : ComponentActivity() {
                             onNuevaPartida  = { viewModel.nuevaPartida() },
                             onSalir         = { finalizarApp() },
                             onEmailCambiado = { viewModel.actualizarEmailDestinatario(it) }
+                        )
+                    },
+
+                    historialContent = {
+                        RankingScreen(
+                            partidas = historial,
+                            onVolver = { viewModel.navegarA(Pantalla.MENU_PRINCIPAL) }
                         )
                     }
                 )

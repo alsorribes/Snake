@@ -11,7 +11,9 @@
     <string name="menu_titol">SNAKE</string>
     <string name="menu_subtitulo">El joc de la serp</string>
     <string name="menu_tagline">Menja pomes · Creix · Sobreviu</string>
-    <string name="menu_empezar">▶  COMEÇAR PARTIDA</string>
+    <string name="menu_empezar">▶  COMENÇAR PARTIDA</string>
+    <string name="menu_configurar">⚙️  CONFIGURACIÓ</string>
+    <string name="menu_ranquing">🏆  RÀNQUING</string>
     <string name="menu_ayuda">❓  AJUDA</string>
     <string name="menu_salir">✕  SORTIR</string>
 
@@ -27,7 +29,7 @@
     <string name="config_tiempo_label">⏱️  Control del temps</string>
     <string name="config_tiempo_checkbox">Activar temps màxim</string>
     <string name="config_tiempo_campo">Temps màxim (segons)</string>
-    <string name="config_empezar">▶  COMEÇAR PARTIDA</string>
+    <string name="config_empezar">▶  COMENÇAR PARTIDA</string>
     <string name="config_volver">◀ TORNAR</string>
 
     <!-- Errors de validació -->
@@ -48,7 +50,7 @@
     <!-- Resultats -->
     <string name="resultados_titulo">🏁  Resultats</string>
     <string name="resultados_resum">Resum de la partida</string>
-    <string name="resultados_fecha_label">📅  Dia i hora de finalització</string>
+    <string name="resultados_fecha_label">Data i hora</string>
     <string name="resultados_log_label">📋  Valors del log</string>
     <string name="resultados_email_label">📧  E-mail destinatari</string>
     <string name="resultados_enviar">📧  Enviar e-mail</string>
@@ -60,7 +62,7 @@
     <string name="resultados_perdut_temps">Temps esgotat ⏱</string>
     <string name="resultados_no_resultat">Resultat no disponible</string>
 
-    <!-- Missatges fi de partida (ViewModel) -->
+    <!-- Missatges fi de partida -->
     <string name="msg_ganada">🏆 Has guanyat!</string>
     <string name="msg_perdida_colision">💀 Game Over — La serp ha xocat</string>
     <string name="msg_perdida_tiempo">⏱ Has esgotat el temps!</string>
@@ -84,4 +86,15 @@
     <string name="ayuda_config_alias">👤 Àlies del jugador</string>
     <string name="ayuda_config_tamano">📐 Mida de la parrilla: Petita · Mitjana · Gran</string>
     <string name="ayuda_config_temps">⏱️ Control del temps amb límit configurable</string>
+
+    <!-- Rànquing -->
+    <string name="ranking_titulo">🏆  Rànquing</string>
+    <string name="ranking_volver">◀ Tornar</string>
+    <string name="ranking_tornar_llista">Tornar al rànquing</string>
+    <string name="ranking_buit">Encara no hi ha partides guardades</string>
+    <string name="ranking_selecciona">Selecciona una partida per veure el detall</string>
+    <string name="ranking_manzanas">Pomes menjades</string>
+    <string name="ranking_longitud">Longitud serp</string>
+    <string name="ranking_temps_total">Temps total</string>
+    <string name="ranking_temps_sobrant">Temps sobrant</string>
 </resources>
