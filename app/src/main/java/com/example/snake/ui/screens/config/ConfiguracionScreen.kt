@@ -1,151 +1,236 @@
 package com.example.snake.ui.screens.config
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.RadioButtonDefaults
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.snake.model.ConfiguracionPartida
-import com.example.snake.model.TIEMPO_MAXIMO_DEFECTO_SEG
+import com.example.snake.R
 import com.example.snake.model.TamanoParrilla
 import com.example.snake.ui.theme.BackgroundDark
 import com.example.snake.ui.theme.BtnError
 import com.example.snake.ui.theme.SnakeDarkGreen
 import com.example.snake.ui.theme.SnakeGreen
 import com.example.snake.ui.theme.SnakeLightGreen
+import com.example.snake.viewmodel.ConfiguracionUiState
+import com.example.snake.viewmodel.GameViewModel
 
 @Composable
 fun ConfiguracionScreen(
-    onEmpezar: (ConfiguracionPartida) -> Unit,
+    configuracion: ConfiguracionUiState,
+    onAliasChange: (String) -> Unit,
+    onTamanoChange: (TamanoParrilla) -> Unit,
+    onControlTiempoChange: (Boolean) -> Unit,
+    onTiempoTextoChange: (String) -> Unit,
+    onEmpezar: () -> Unit,
     onVolver: () -> Unit
 ) {
-    var alias             by rememberSaveable { mutableStateOf("") }
-    var tamanoSeleccionado by rememberSaveable { mutableStateOf(TamanoParrilla.MEDIANA.name) }
-    var controlTiempo     by rememberSaveable { mutableStateOf(false) }
-    var tiempoMaximoTexto by rememberSaveable { mutableStateOf(TIEMPO_MAXIMO_DEFECTO_SEG.toString()) }
-    var errorGeneral      by rememberSaveable { mutableStateOf<String?>(null) }
-    var errorTiempo       by rememberSaveable { mutableStateOf<String?>(null) }
+    val errorAliasMsg = when (configuracion.errorAlias) {
+        GameViewModel.ERROR_ALIAS_BUIT -> stringResource(R.string.error_alias_vacio)
+        else -> configuracion.errorAlias
+    }
+    val errorTiempoMsg = when (configuracion.errorTiempo) {
+        GameViewModel.ERROR_TIEMPO_INVALIDO -> stringResource(R.string.error_tiempo_invalido)
+        else -> configuracion.errorTiempo
+    }
 
-    val tamanoParrilla = TamanoParrilla.valueOf(tamanoSeleccionado)
+    val esLandscape =
+        LocalConfiguration.current.screenWidthDp > LocalConfiguration.current.screenHeightDp
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(BackgroundDark)
-            // FIX [P2]: padding de insets del sistema para evitar solapamiento
             .safeDrawingPadding()
-            .verticalScroll(rememberScrollState())
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text("⚙️  Configuració", fontSize = 26.sp, fontWeight = FontWeight.ExtraBold,
-            color = SnakeGreen)
-        Text("Ajusta els paràmetres de la teva partida", fontSize = 13.sp,
-            color = Color.White.copy(alpha = 0.5f))
+        if (esLandscape) {
+            // ── Landscape: dues columnes, sense scroll ─────────────────────────
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Títol compacte
+                Text(
+                    stringResource(R.string.config_titulo),
+                    fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = SnakeGreen
+                )
 
-        Spacer(Modifier.height(4.dp))
+                Row(
+                    modifier              = Modifier.fillMaxSize(),
+                    horizontalArrangement = Arrangement.spacedBy(24.dp)
+                ) {
+                    // Columna esquerra: àlies + mida
+                    Column(
+                        modifier            = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        SeccionAlias(
+                            alias         = configuracion.alias,
+                            errorMsg      = errorAliasMsg,
+                            onAliasChange = onAliasChange
+                        )
+                        SeccionTamano(
+                            tamanoSeleccionado = configuracion.tamanoParrilla,
+                            onTamanoChange     = onTamanoChange
+                        )
+                    }
 
-        SeccionAlias(alias = alias, onAliasChange = { alias = it; errorGeneral = null })
-        SeccionTamano(tamanoSeleccionado = tamanoSeleccionado,
-            onTamanoChange = { tamanoSeleccionado = it; errorGeneral = null })
-        SeccionTiempo(controlTiempo, tiempoMaximoTexto, errorTiempo,
-            onControlTiempoChange = { controlTiempo = it; errorTiempo = null },
-            onTiempoTextoChange = { tiempoMaximoTexto = it; errorTiempo = null })
-
-        if (errorGeneral != null) {
-            Text(errorGeneral!!, color = BtnError, fontSize = 13.sp)
-        }
-
-        Spacer(Modifier.height(4.dp))
-
-        Button(
-            onClick = {
-                if (controlTiempo) {
-                    val t = tiempoMaximoTexto.toIntOrNull()
-                    if (t == null || t <= 0) {
-                        errorTiempo = "Introdueix un nombre de segons vàlid (> 0)"
-                        return@Button
+                    // Columna dreta: temps + botons
+                    Column(
+                        modifier            = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        SeccionTiempo(
+                            controlTiempo         = configuracion.controlTiempo,
+                            tiempoMaximoTexto     = configuracion.tiempoMaximoTexto,
+                            errorMsg              = errorTiempoMsg,
+                            onControlTiempoChange = onControlTiempoChange,
+                            onTiempoTextoChange   = onTiempoTextoChange
+                        )
+                        Spacer(Modifier.weight(1f))
+                        Button(
+                            onClick  = onEmpezar,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors   = ButtonDefaults.buttonColors(containerColor = SnakeDarkGreen)
+                        ) {
+                            Text(
+                                stringResource(R.string.config_empezar),
+                                fontWeight = FontWeight.Bold, fontSize = 14.sp
+                            )
+                        }
+                        OutlinedButton(
+                            onClick  = onVolver,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors   = ButtonDefaults.outlinedButtonColors(contentColor = SnakeLightGreen)
+                        ) {
+                            Text(stringResource(R.string.config_volver), fontSize = 13.sp)
+                        }
                     }
                 }
-                val config = ConfiguracionPartida(
-                    alias = alias.ifBlank { "Jugador" },
-                    tamanoParrilla = tamanoParrilla,
-                    controlTiempo = controlTiempo,
-                    tiempoMaximoSeg = tiempoMaximoTexto.toIntOrNull() ?: TIEMPO_MAXIMO_DEFECTO_SEG
-                )
-                val err = config.validar()
-                if (err != null) errorGeneral = err else onEmpezar(config)
-            },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = SnakeDarkGreen)
-        ) {
-            Text("▶  COMENÇAR PARTIDA", fontWeight = FontWeight.Bold,
-                fontSize = 15.sp, modifier = Modifier.padding(vertical = 4.dp))
-        }
+            }
 
-        OutlinedButton(onClick = onVolver, modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = SnakeLightGreen)) {
-            Text("◀ TORNAR", fontSize = 14.sp)
+        } else {
+            // ── Portrait: columna amb scroll ───────────────────────────────────
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    stringResource(R.string.config_titulo),
+                    fontSize = 26.sp, fontWeight = FontWeight.ExtraBold, color = SnakeGreen
+                )
+                Text(
+                    stringResource(R.string.config_subtitulo),
+                    fontSize = 13.sp, color = Color.White.copy(alpha = 0.5f)
+                )
+                Spacer(Modifier.height(4.dp))
+                SeccionAlias(
+                    alias         = configuracion.alias,
+                    errorMsg      = errorAliasMsg,
+                    onAliasChange = onAliasChange
+                )
+                SeccionTamano(
+                    tamanoSeleccionado = configuracion.tamanoParrilla,
+                    onTamanoChange     = onTamanoChange
+                )
+                SeccionTiempo(
+                    controlTiempo         = configuracion.controlTiempo,
+                    tiempoMaximoTexto     = configuracion.tiempoMaximoTexto,
+                    errorMsg              = errorTiempoMsg,
+                    onControlTiempoChange = onControlTiempoChange,
+                    onTiempoTextoChange   = onTiempoTextoChange
+                )
+                Spacer(Modifier.height(4.dp))
+                Button(
+                    onClick  = onEmpezar,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors   = ButtonDefaults.buttonColors(containerColor = SnakeDarkGreen)
+                ) {
+                    Text(
+                        stringResource(R.string.config_empezar),
+                        fontWeight = FontWeight.Bold,
+                        fontSize   = 15.sp,
+                        modifier   = Modifier.padding(vertical = 4.dp)
+                    )
+                }
+                OutlinedButton(
+                    onClick  = onVolver,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors   = ButtonDefaults.outlinedButtonColors(contentColor = SnakeLightGreen)
+                ) {
+                    Text(stringResource(R.string.config_volver), fontSize = 14.sp)
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun SeccionAlias(alias: String, onAliasChange: (String) -> Unit) {
+private fun SeccionAlias(
+    alias: String,
+    errorMsg: String?,
+    onAliasChange: (String) -> Unit
+) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        EtiquetaSeccion("👤  Àlies del jugador")
+        EtiquetaSeccion(stringResource(R.string.config_alias_seccio))
         OutlinedTextField(
-            value = alias, onValueChange = onAliasChange,
-            placeholder = { Text("Ex: Jugador", color = Color.White.copy(alpha = 0.3f)) },
-            label = { Text("Àlies", color = SnakeLightGreen.copy(alpha = 0.7f)) },
-            modifier = Modifier.fillMaxWidth(), singleLine = true, colors = camposColores()
+            value         = alias,
+            onValueChange = onAliasChange,
+            placeholder   = {
+                Text(stringResource(R.string.alias_placeholder), color = Color.White.copy(alpha = 0.3f))
+            },
+            label         = {
+                Text(stringResource(R.string.config_alias_label), color = SnakeLightGreen.copy(alpha = 0.7f))
+            },
+            modifier       = Modifier.fillMaxWidth(),
+            singleLine     = true,
+            isError        = errorMsg != null,
+            supportingText = errorMsg?.let { { Text(it, color = BtnError, fontSize = 12.sp) } },
+            colors         = camposColores()
         )
     }
 }
 
 @Composable
-private fun SeccionTamano(tamanoSeleccionado: String, onTamanoChange: (String) -> Unit) {
+private fun SeccionTamano(
+    tamanoSeleccionado: TamanoParrilla,
+    onTamanoChange: (TamanoParrilla) -> Unit
+) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        EtiquetaSeccion("📐  Mida de la parrilla")
+        EtiquetaSeccion(stringResource(R.string.config_tamano_label))
         TamanoParrilla.entries.forEach { tamano ->
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                RadioButton(selected = tamanoSeleccionado == tamano.name,
-                    onClick = { onTamanoChange(tamano.name) },
-                    colors = RadioButtonDefaults.colors(selectedColor = SnakeGreen))
+            Row(
+                modifier          = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RadioButton(
+                    selected = tamanoSeleccionado == tamano,
+                    onClick  = { onTamanoChange(tamano) },
+                    colors   = RadioButtonDefaults.colors(selectedColor = SnakeGreen)
+                )
                 Column {
                     Text(tamano.etiqueta, color = Color.White, fontSize = 14.sp)
-                    Text("${tamano.filas}×${tamano.columnas} caselles",
-                        color = Color.White.copy(alpha = 0.4f), fontSize = 11.sp)
+                    Text(
+                        stringResource(R.string.config_tamano_caselles, tamano.filas, tamano.columnas),
+                        color    = Color.White.copy(alpha = 0.4f),
+                        fontSize = 11.sp
+                    )
                 }
             }
         }
@@ -154,24 +239,35 @@ private fun SeccionTamano(tamanoSeleccionado: String, onTamanoChange: (String) -
 
 @Composable
 private fun SeccionTiempo(
-    controlTiempo: Boolean, tiempoMaximoTexto: String, errorTiempo: String?,
-    onControlTiempoChange: (Boolean) -> Unit, onTiempoTextoChange: (String) -> Unit
+    controlTiempo: Boolean,
+    tiempoMaximoTexto: String,
+    errorMsg: String?,
+    onControlTiempoChange: (Boolean) -> Unit,
+    onTiempoTextoChange: (String) -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        EtiquetaSeccion("⏱️  Control del temps")
+        EtiquetaSeccion(stringResource(R.string.config_tiempo_label))
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Checkbox(checked = controlTiempo, onCheckedChange = onControlTiempoChange,
-                colors = CheckboxDefaults.colors(checkedColor = SnakeGreen))
-            Text("Activar temps màxim", color = Color.White, fontSize = 14.sp)
+            Checkbox(
+                checked         = controlTiempo,
+                onCheckedChange = onControlTiempoChange,
+                colors          = CheckboxDefaults.colors(checkedColor = SnakeGreen)
+            )
+            Text(stringResource(R.string.config_tiempo_checkbox), color = Color.White, fontSize = 14.sp)
         }
         OutlinedTextField(
-            value = tiempoMaximoTexto, onValueChange = onTiempoTextoChange,
-            label = { Text("Temps màxim (segons)", color = SnakeLightGreen.copy(alpha = 0.7f)) },
-            modifier = Modifier.fillMaxWidth(), enabled = controlTiempo, singleLine = true,
-            isError = errorTiempo != null,
-            supportingText = errorTiempo?.let { { Text(it, color = BtnError, fontSize = 12.sp) } },
+            value         = tiempoMaximoTexto,
+            onValueChange = onTiempoTextoChange,
+            label         = {
+                Text(stringResource(R.string.config_tiempo_campo), color = SnakeLightGreen.copy(alpha = 0.7f))
+            },
+            modifier        = Modifier.fillMaxWidth(),
+            enabled         = controlTiempo,
+            singleLine      = true,
+            isError         = errorMsg != null,
+            supportingText  = errorMsg?.let { { Text(it, color = BtnError, fontSize = 12.sp) } },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            colors = camposColores()
+            colors          = camposColores()
         )
     }
 }

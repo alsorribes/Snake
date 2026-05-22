@@ -13,26 +13,32 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.snake.R
 import com.example.snake.model.Casilla
 import com.example.snake.model.Direccion
 import com.example.snake.model.Partida
+import com.example.snake.model.ResultadoPartida
 import com.example.snake.model.Serpiente
 import com.example.snake.ui.theme.AppleRed
 import com.example.snake.ui.theme.BackgroundDark
@@ -61,12 +67,20 @@ fun JuegoScreen(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                "No hi ha partida en curs",
+                stringResource(R.string.joc_sense_partida),
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color.White
             )
         }
         return
+    }
+
+    // Resol el missatge de fi de partida a partir de l'enum (string externalitzat)
+    val mensajeGameOver: String? = when (uiState.finPartida) {
+        ResultadoPartida.GANADA           -> stringResource(R.string.msg_ganada)
+        ResultadoPartida.PERDIDA_COLISION -> stringResource(R.string.msg_perdida_colision)
+        ResultadoPartida.PERDIDA_TIEMPO   -> stringResource(R.string.msg_perdida_tiempo)
+        null                              -> null
     }
 
     val esLandscape =
@@ -79,11 +93,8 @@ fun JuegoScreen(
             JuegoPortrait(partida, uiState.enPausa, onCambiarDireccion, onTogglePausa)
         }
 
-        if (uiState.mensajeGameOver != null) {
-            FinPartidaOverlay(
-                mensaje = uiState.mensajeGameOver,
-                onIrAResultados = onIrAResultados
-            )
+        if (mensajeGameOver != null) {
+            FinPartidaOverlay(mensaje = mensajeGameOver, onIrAResultados = onIrAResultados)
         } else if (uiState.enPausa) {
             PausaOverlay(onReanudar = onTogglePausa)
         }
@@ -91,10 +102,7 @@ fun JuegoScreen(
 }
 
 @Composable
-private fun FinPartidaOverlay(
-    mensaje: String,
-    onIrAResultados: () -> Unit
-) {
+private fun FinPartidaOverlay(mensaje: String, onIrAResultados: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -109,22 +117,21 @@ private fun FinPartidaOverlay(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = mensaje,
-                fontSize = 22.sp,
+                text      = mensaje,
+                fontSize  = 22.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = Color.White,
+                color     = Color.White,
                 textAlign = TextAlign.Center
             )
-
             Button(
                 onClick = onIrAResultados,
-                colors = ButtonDefaults.buttonColors(containerColor = SnakeGreen),
-                shape = RoundedCornerShape(12.dp)
+                colors  = ButtonDefaults.buttonColors(containerColor = SnakeGreen),
+                shape   = RoundedCornerShape(12.dp)
             ) {
                 Text(
-                    text = "VEURE RESULTATS",
+                    text       = stringResource(R.string.joc_btn_resultats),
                     fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                    modifier   = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                 )
             }
         }
@@ -132,9 +139,7 @@ private fun FinPartidaOverlay(
 }
 
 @Composable
-private fun PausaOverlay(
-    onReanudar: () -> Unit
-) {
+private fun PausaOverlay(onReanudar: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -149,21 +154,20 @@ private fun PausaOverlay(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "PAUSA",
-                fontSize = 24.sp,
+                text       = stringResource(R.string.joc_pausa_titol),
+                fontSize   = 24.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = Color.White
+                color      = Color.White
             )
-
             Button(
                 onClick = onReanudar,
-                colors = ButtonDefaults.buttonColors(containerColor = SnakeGreen),
-                shape = RoundedCornerShape(12.dp)
+                colors  = ButtonDefaults.buttonColors(containerColor = SnakeGreen),
+                shape   = RoundedCornerShape(12.dp)
             ) {
                 Text(
-                    text = "▶ REANUDAR",
+                    text       = stringResource(R.string.juego_reanudar),
                     fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                    modifier   = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                 )
             }
         }
@@ -182,32 +186,24 @@ private fun JuegoPortrait(
             .fillMaxSize()
             .background(BoardBackground)
             .padding(12.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        verticalArrangement   = Arrangement.spacedBy(8.dp),
+        horizontalAlignment   = Alignment.CenterHorizontally
     ) {
         InfoPartida(
-            partida.config.alias,
-            partida.manzanasComidas,
-            partida.serpiente.longitud,
-            partida.tiempoParaMostrar,
-            partida.config.controlTiempo,
-            enPausa
+            alias          = partida.config.alias,
+            manzanasComidas = partida.manzanasComidas,
+            longitud        = partida.serpiente.longitud,
+            tiempoMostrar   = partida.tiempoParaMostrar,
+            controlTiempo   = partida.config.controlTiempo,
+            enPausa         = enPausa
         )
-
         TableroJuego(
-            partida.filas,
-            partida.columnas,
-            partida.serpiente,
-            partida.manzana,
+            partida.filas, partida.columnas, partida.serpiente, partida.manzana,
             Modifier
                 .fillMaxWidth()
                 .aspectRatio(partida.columnas.toFloat() / partida.filas.toFloat())
         )
-
-        if (!enPausa) {
-            BotonPausa(enPausa, onTogglePausa)
-        }
-
+        if (!enPausa) BotonPausa(enPausa, onTogglePausa)
         ControlesDireccion(onCambiarDireccion, tamanoBoton = 88.dp)
     }
 }
@@ -227,36 +223,33 @@ private fun JuegoLandscape(
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         TableroJuego(
-            partida.filas,
-            partida.columnas,
-            partida.serpiente,
-            partida.manzana,
+            partida.filas, partida.columnas, partida.serpiente, partida.manzana,
             Modifier
                 .fillMaxHeight()
                 .aspectRatio(partida.columnas.toFloat() / partida.filas.toFloat())
         )
 
+        // Panell dret: scrollable per a evitar tall de botons en pantalles petites
         Column(
             modifier = Modifier
-                .fillMaxHeight()
-                .weight(1f),
-            verticalArrangement = Arrangement.SpaceEvenly,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(vertical = 4.dp),
+            verticalArrangement   = Arrangement.spacedBy(10.dp),
+            horizontalAlignment   = Alignment.CenterHorizontally
         ) {
             InfoPartida(
-                partida.config.alias,
-                partida.manzanasComidas,
-                partida.serpiente.longitud,
-                partida.tiempoParaMostrar,
-                partida.config.controlTiempo,
-                enPausa
+                alias           = partida.config.alias,
+                manzanasComidas = partida.manzanasComidas,
+                longitud        = partida.serpiente.longitud,
+                tiempoMostrar   = partida.tiempoParaMostrar,
+                controlTiempo   = partida.config.controlTiempo,
+                enPausa         = enPausa
             )
-
             if (!enPausa) {
                 BotonPausa(enPausa, onTogglePausa, Modifier.fillMaxWidth())
             }
-
-            ControlesDireccion(onCambiarDireccion, tamanoBoton = 64.dp)
+            ControlesDireccion(onCambiarDireccion, tamanoBoton = 56.dp)
         }
     }
 }
@@ -271,48 +264,46 @@ private fun InfoPartida(
     enPausa: Boolean
 ) {
     val colorTiempo = if (controlTiempo) TimeWithControl else TimeNoControl
-    val labelTiempo = if (controlTiempo) "⏱ $tiempoMostrar s" else "⏱ $tiempoMostrar s"
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = BackgroundDark.copy(alpha = 0.9f),
-                shape = RoundedCornerShape(16.dp)
+                color  = BackgroundDark.copy(alpha = 0.9f),
+                shape  = RoundedCornerShape(16.dp)
             )
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier              = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment     = Alignment.CenterVertically
         ) {
             Column {
                 Text(
-                    text = "👤 $alias",
-                    color = Color.White,
-                    fontSize = 14.sp,
+                    text       = "👤 $alias",
+                    color      = Color.White,
+                    fontSize   = 14.sp,
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    text = "🍎 $manzanasComidas  •  Longitud: $longitud",
-                    color = Color.White.copy(alpha = 0.75f),
+                    text     = stringResource(R.string.joc_info_longitud, manzanasComidas, longitud),
+                    color    = Color.White.copy(alpha = 0.75f),
                     fontSize = 12.sp
                 )
             }
-
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = labelTiempo,
-                    color = colorTiempo,
-                    fontSize = 20.sp,
+                    text       = stringResource(R.string.joc_info_temps, tiempoMostrar),
+                    color      = colorTiempo,
+                    fontSize   = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
                 if (enPausa) {
                     Text(
-                        text = "PAUSADO",
-                        color = Color.Yellow,
-                        fontSize = 11.sp,
+                        text       = stringResource(R.string.joc_pausat),
+                        color      = Color.Yellow,
+                        fontSize   = 11.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -339,52 +330,31 @@ fun TableroJuego(
                 .fillMaxSize()
                 .background(BoardBackground, RoundedCornerShape(12.dp))
         ) {
-            val cellW = size.width / columnas
+            val cellW = size.width  / columnas
             val cellH = size.height / filas
 
             drawRect(color = BoardBackground, size = size)
 
             for (f in 0..filas) {
-                drawLine(
-                    color = BoardGrid,
-                    start = Offset(0f, f * cellH),
-                    end = Offset(size.width, f * cellH),
-                    strokeWidth = 1f
-                )
+                drawLine(BoardGrid, Offset(0f, f * cellH), Offset(size.width, f * cellH), 1f)
             }
-
             for (c in 0..columnas) {
-                drawLine(
-                    color = BoardGrid,
-                    start = Offset(c * cellW, 0f),
-                    end = Offset(c * cellW, size.height),
-                    strokeWidth = 1f
-                )
+                drawLine(BoardGrid, Offset(c * cellW, 0f), Offset(c * cellW, size.height), 1f)
             }
 
             drawRect(
-                color = AppleRed,
-                topLeft = Offset(
-                    manzana.columna * cellW + 3f,
-                    manzana.fila * cellH + 3f
-                ),
-                size = Size(cellW - 6f, cellH - 6f)
+                color    = AppleRed,
+                topLeft  = Offset(manzana.columna * cellW + 3f, manzana.fila * cellH + 3f),
+                size     = Size(cellW - 6f, cellH - 6f)
             )
 
             serpiente.segmentos.forEachIndexed { index, casilla ->
-                val color = if (index == 0) SnakeHead else SnakeBody
+                val color  = if (index == 0) SnakeHead else SnakeBody
                 val margin = if (index == 0) 1f else 3f
-
                 drawRect(
-                    color = color,
-                    topLeft = Offset(
-                        casilla.columna * cellW + margin,
-                        casilla.fila * cellH + margin
-                    ),
-                    size = Size(
-                        cellW - margin * 2,
-                        cellH - margin * 2
-                    )
+                    color   = color,
+                    topLeft = Offset(casilla.columna * cellW + margin, casilla.fila * cellH + margin),
+                    size    = Size(cellW - margin * 2, cellH - margin * 2)
                 )
             }
         }
@@ -398,14 +368,15 @@ private fun BotonPausa(
     modifier: Modifier = Modifier.fillMaxWidth()
 ) {
     Button(
-        onClick = onTogglePausa,
+        onClick  = onTogglePausa,
         modifier = modifier,
-        colors = ButtonDefaults.buttonColors(
+        colors   = ButtonDefaults.buttonColors(
             containerColor = if (enPausa) SnakeGreen else BtnNeutral
         )
     ) {
         Text(
-            if (enPausa) "▶  REANUDAR" else "⏸  PAUSAR",
+            if (enPausa) stringResource(R.string.juego_reanudar)
+            else         stringResource(R.string.juego_pausar),
             fontWeight = FontWeight.SemiBold
         )
     }
@@ -420,16 +391,16 @@ private fun ControlesDireccion(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        BotonDireccion("▲", Direccion.ARRIBA, onCambiarDireccion, Modifier.size(tamanoBoton))
+        BotonDireccion("▲", Direccion.ARRIBA,    onCambiarDireccion, Modifier.size(tamanoBoton))
         Row(
             horizontalArrangement = Arrangement.spacedBy(20.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment     = Alignment.CenterVertically
         ) {
             BotonDireccion("◀", Direccion.IZQUIERDA, onCambiarDireccion, Modifier.size(tamanoBoton))
             Box(Modifier.size(tamanoBoton))
-            BotonDireccion("▶", Direccion.DERECHA, onCambiarDireccion, Modifier.size(tamanoBoton))
+            BotonDireccion("▶", Direccion.DERECHA,   onCambiarDireccion, Modifier.size(tamanoBoton))
         }
-        BotonDireccion("▼", Direccion.ABAJO, onCambiarDireccion, Modifier.size(tamanoBoton))
+        BotonDireccion("▼", Direccion.ABAJO,    onCambiarDireccion, Modifier.size(tamanoBoton))
     }
 }
 
@@ -441,9 +412,9 @@ private fun BotonDireccion(
     modifier: Modifier
 ) {
     Button(
-        onClick = { onClick(direccion) },
+        onClick  = { onClick(direccion) },
         modifier = modifier,
-        colors = ButtonDefaults.buttonColors(containerColor = SnakeDarkGreen)
+        colors   = ButtonDefaults.buttonColors(containerColor = SnakeDarkGreen)
     ) {
         Text(etiqueta, fontSize = 22.sp, color = Color.White)
     }

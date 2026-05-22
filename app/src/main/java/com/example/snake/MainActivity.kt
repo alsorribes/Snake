@@ -27,10 +27,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // FIX [F2][P1]: habilitar edge-to-edge para que el contenido de Compose
-        // gestione correctamente los insets del sistema (barra de estado, notch, etc.)
-        // Cada pantalla aplica su propio safeDrawingPadding() para respetar estos márgenes.
         enableEdgeToEdge()
 
         setContent {
@@ -58,24 +54,30 @@ class MainActivity : ComponentActivity() {
 
                     configuracionContent = {
                         ConfiguracionScreen(
-                            onEmpezar = { config -> viewModel.iniciarPartida(config) },
-                            onVolver  = { viewModel.navegarA(Pantalla.MENU_PRINCIPAL) }
+                            configuracion         = uiState.configuracion,
+                            onAliasChange         = { viewModel.actualizarAlias(it) },
+                            onTamanoChange        = { viewModel.actualizarTamano(it) },
+                            onControlTiempoChange = { viewModel.actualizarControlTiempo(it) },
+                            onTiempoTextoChange   = { viewModel.actualizarTiempoTexto(it) },
+                            onEmpezar             = { viewModel.iniciarPartidaDesdeConfiguracion() },
+                            onVolver              = { viewModel.navegarA(Pantalla.MENU_PRINCIPAL) }
                         )
                     },
 
                     juegoContent = {
                         JuegoScreen(
-                            uiState = uiState,
+                            uiState            = uiState,
                             onCambiarDireccion = { dir -> viewModel.cambiarDireccion(dir) },
-                            onTogglePausa = { viewModel.togglePausa() },
-                            onIrAResultados = { viewModel.irAResultados() }
+                            onTogglePausa      = { viewModel.togglePausa() },
+                            onIrAResultados    = { viewModel.irAResultados() }
                         )
                     },
 
                     resultadosContent = {
                         ResultadosScreen(
-                            uiState        = uiState,
-                            onEnviarEmail  = { email ->
+                            log               = uiState.log,
+                            emailDestinatario = uiState.emailDestinatario,
+                            onEnviarEmail     = { email ->
                                 enviarEmail(
                                     destinatario = email,
                                     asunto       = uiState.log?.generarAsuntoEmail() ?: "",
