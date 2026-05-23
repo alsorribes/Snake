@@ -107,8 +107,10 @@ class MainActivity : ComponentActivity() {
 
                     historialContent = {
                         RankingScreen(
-                            partidas = historial,
-                            onVolver = { viewModel.navegarA(Pantalla.MENU_PRINCIPAL) }
+                            partidas      = historial,
+                            seleccionada  = uiState.partidaSeleccionada,
+                            onSeleccionar = { viewModel.seleccionarPartida(it) },
+                            onVolver      = { viewModel.navegarA(Pantalla.MENU_PRINCIPAL) }
                         )
                     }
                 )

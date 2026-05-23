@@ -15,6 +15,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -51,7 +52,7 @@ fun ResultadosScreen(
             contentAlignment = Alignment.Center
         ) {
             Column(
-                modifier = Modifier.padding(24.dp),
+                modifier            = Modifier.padding(24.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -66,7 +67,8 @@ fun ResultadosScreen(
         return
     }
 
-    val clauLog = "${log.alias}_${log.resultado}_${log.tiempoTotalSeg}"
+    val context  = LocalContext.current
+    val clauLog  = "${log.alias}_${log.resultado}_${log.tiempoTotalSeg}"
     var textoLog   by rememberSaveable(clauLog) { mutableStateOf(log.generarTexto()) }
     var email      by rememberSaveable(emailDestinatario) { mutableStateOf(emailDestinatario) }
     var emailError by rememberSaveable { mutableStateOf<String?>(null) }
@@ -79,6 +81,16 @@ fun ResultadosScreen(
     val esLandscape =
         LocalConfiguration.current.screenWidthDp > LocalConfiguration.current.screenHeightDp
 
+    // Lambda reutilitzable per validar i enviar l'email
+    val onClickEnviar: () -> Unit = {
+        if (!EMAIL_REGEX.matches(email)) {
+            emailError = context.getString(R.string.error_email_invalido)
+        } else {
+            emailError = null
+            onEnviarEmail(email)
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -88,7 +100,6 @@ fun ResultadosScreen(
         GridBackground()
 
         if (esLandscape) {
-            // ── Landscape: dues columnes, sense scroll ─────────────────────────
             Row(
                 modifier              = Modifier
                     .fillMaxSize()
@@ -102,7 +113,9 @@ fun ResultadosScreen(
                 ) {
                     Text(
                         stringResource(R.string.resultados_titulo),
-                        fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = SnakeGreen
+                        fontSize   = 22.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color      = SnakeGreen
                     )
                     TarjetaEstatResultat(log.resultado)
                     EtiquetaResultado(stringResource(R.string.resultados_fecha_label))
@@ -117,7 +130,9 @@ fun ResultadosScreen(
                     OutlinedTextField(
                         value         = textoLog,
                         onValueChange = { textoLog = it },
-                        modifier      = Modifier.fillMaxWidth().weight(1f),
+                        modifier      = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
                         colors        = camposColores()
                     )
                 }
@@ -135,7 +150,9 @@ fun ResultadosScreen(
                             emailError = null
                             onEmailCambiado(it)
                         },
-                        modifier        = Modifier.fillMaxWidth().focusRequester(focusRequester),
+                        modifier        = Modifier
+                            .fillMaxWidth()
+                            .focusRequester(focusRequester),
                         singleLine      = true,
                         isError         = emailError != null,
                         supportingText  = emailError?.let { { Text(it, color = BtnError, fontSize = 12.sp) } },
@@ -143,14 +160,7 @@ fun ResultadosScreen(
                         colors          = camposColores()
                     )
                     Button(
-                        onClick = {
-                            if (!EMAIL_REGEX.matches(email)) {
-                                emailError = "Introdueix un email vàlid"
-                            } else {
-                                emailError = null
-                                onEnviarEmail(email)
-                            }
-                        },
+                        onClick  = onClickEnviar,
                         modifier = Modifier.fillMaxWidth(),
                         colors   = ButtonDefaults.buttonColors(containerColor = SnakeDarkGreen),
                         shape    = RoundedCornerShape(12.dp)
@@ -179,7 +189,6 @@ fun ResultadosScreen(
             }
 
         } else {
-            // ── Portrait: columna amb scroll ───────────────────────────────────
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -191,11 +200,14 @@ fun ResultadosScreen(
             ) {
                 Text(
                     stringResource(R.string.resultados_titulo),
-                    fontSize = 26.sp, fontWeight = FontWeight.ExtraBold, color = SnakeGreen
+                    fontSize   = 26.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color      = SnakeGreen
                 )
                 Text(
                     stringResource(R.string.resultados_resum),
-                    fontSize = 13.sp, color = Color.White.copy(alpha = 0.5f)
+                    fontSize = 13.sp,
+                    color    = Color.White.copy(alpha = 0.5f)
                 )
                 TarjetaEstatResultat(log.resultado)
                 EtiquetaResultado(stringResource(R.string.resultados_fecha_label))
@@ -222,7 +234,9 @@ fun ResultadosScreen(
                         emailError = null
                         onEmailCambiado(it)
                     },
-                    modifier        = Modifier.fillMaxWidth().focusRequester(focusRequester),
+                    modifier        = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester),
                     singleLine      = true,
                     isError         = emailError != null,
                     supportingText  = emailError?.let { { Text(it, color = BtnError, fontSize = 12.sp) } },
@@ -230,14 +244,7 @@ fun ResultadosScreen(
                     colors          = camposColores()
                 )
                 Button(
-                    onClick = {
-                        if (!EMAIL_REGEX.matches(email)) {
-                            emailError = "Introdueix un email vàlid"
-                        } else {
-                            emailError = null
-                            onEnviarEmail(email)
-                        }
-                    },
+                    onClick  = onClickEnviar,
                     modifier = Modifier.fillMaxWidth(),
                     colors   = ButtonDefaults.buttonColors(containerColor = SnakeDarkGreen),
                     shape    = RoundedCornerShape(12.dp)
@@ -256,7 +263,10 @@ fun ResultadosScreen(
                     colors   = ButtonDefaults.outlinedButtonColors(contentColor = SnakeLightGreen),
                     border   = androidx.compose.foundation.BorderStroke(1.dp, SnakeLightGreen.copy(alpha = 0.4f))
                 ) {
-                    Text(stringResource(R.string.resultados_nueva_partida), modifier = Modifier.padding(vertical = 4.dp))
+                    Text(
+                        stringResource(R.string.resultados_nueva_partida),
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
                 }
                 Button(
                     onClick  = onSalir,
@@ -274,6 +284,8 @@ fun ResultadosScreen(
         }
     }
 }
+
+// ── Composables privats ───────────────────────────────────────────────────────
 
 @Composable
 private fun TarjetaEstatResultat(resultado: ResultadoPartida?) {

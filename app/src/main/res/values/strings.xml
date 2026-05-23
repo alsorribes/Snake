@@ -15,7 +15,7 @@
     <string name="menu_configurar">⚙️  CONFIGURACIÓ</string>
     <string name="menu_ranquing">🏆  RÀNQUING</string>
     <string name="menu_ayuda">❓  AJUDA</string>
-    <string name="menu_salir">✕  SORTIR</string>
+    <string name="menu_salir">❌  SORTIR</string>
 
     <!-- Configuració -->
     <string name="config_titulo">⚙️  Configuració</string>
@@ -24,7 +24,7 @@
     <string name="config_alias_label">Àlies</string>
     <string name="alias_placeholder">Ex: Jugador</string>
     <string name="alias_defecto">Jugador</string>
-    <string name="config_tamano_label">📐  Mida de la parrilla</string>
+    <string name="config_tamano_label">Mida de la graella</string>
     <string name="config_tamano_caselles">%1$d×%2$d caselles</string>
     <string name="config_tiempo_label">⏱️  Control del temps</string>
     <string name="config_tiempo_checkbox">Activar temps màxim</string>
@@ -45,12 +45,13 @@
     <string name="juego_pausar">⏸  PAUSAR</string>
     <string name="juego_reanudar">▶  REPRENDRE</string>
     <string name="joc_info_longitud">🍎 %1$d  •  Longitud: %2$d</string>
-    <string name="joc_info_temps">⏱ %d s</string>
+    <string name="joc_info_temps">⏱️ %d s</string>
+    <string name="joc_info_alias">👤 %1$s</string>
 
     <!-- Resultats -->
     <string name="resultados_titulo">🏁  Resultats</string>
     <string name="resultados_resum">Resum de la partida</string>
-    <string name="resultados_fecha_label">Data i hora</string>
+    <string name="resultados_fecha_label">📅  Data i hora</string>
     <string name="resultados_log_label">📋  Valors del log</string>
     <string name="resultados_email_label">📧  E-mail destinatari</string>
     <string name="resultados_enviar">📧  Enviar e-mail</string>
@@ -58,14 +59,14 @@
     <string name="resultados_salir">❌  Sortir</string>
     <string name="resultados_sin_datos">No hi ha resultats disponibles</string>
     <string name="resultados_guanyat">Has guanyat 🎉</string>
-    <string name="resultados_perdut_collisio">Has perdut per col·lisió</string>
-    <string name="resultados_perdut_temps">Temps esgotat ⏱</string>
+    <string name="resultados_perdut_collisio">Has perdut per col·lisió 💥</string>
+    <string name="resultados_perdut_temps">Temps esgotat ⏳️</string>
     <string name="resultados_no_resultat">Resultat no disponible</string>
 
     <!-- Missatges fi de partida -->
-    <string name="msg_ganada">🏆 Has guanyat!</string>
+    <string name="msg_ganada">🎉 Has guanyat!</string>
     <string name="msg_perdida_colision">💀 Game Over — La serp ha xocat</string>
-    <string name="msg_perdida_tiempo">⏱ Has esgotat el temps!</string>
+    <string name="msg_perdida_tiempo">⏳️ Has esgotat el temps!</string>
 
     <!-- Ajuda -->
     <string name="ayuda_titulo">AJUDA</string>
@@ -83,9 +84,9 @@
     <string name="ayuda_victoria_titol">Victòria</string>
     <string name="ayuda_victoria_cos">Guanyes si la serp ocupa totes les caselles del tauler. En acabar podràs enviar el teu resultat per email.</string>
     <string name="ayuda_config_seccio_titol">⚙️  Opcions de Configuració</string>
-    <string name="ayuda_config_alias">👤 Àlies del jugador</string>
-    <string name="ayuda_config_tamano">📐 Mida de la parrilla: Petita · Mitjana · Gran</string>
-    <string name="ayuda_config_temps">⏱️ Control del temps amb límit configurable</string>
+    <string name="ayuda_config_alias">👤  Àlies del jugador</string>
+    <string name="ayuda_config_tamano">📐  Mida de la graella: Petita · Mitjana · Gran</string>
+    <string name="ayuda_config_temps">⏱️  Control del temps amb límit configurable</string>
 
     <!-- Rànquing -->
     <string name="ranking_titulo">🏆  Rànquing</string>
@@ -93,8 +94,9 @@
     <string name="ranking_tornar_llista">Tornar al rànquing</string>
     <string name="ranking_buit">Encara no hi ha partides guardades</string>
     <string name="ranking_selecciona">Selecciona una partida per veure el detall</string>
-    <string name="ranking_manzanas">Pomes menjades</string>
-    <string name="ranking_longitud">Longitud serp</string>
-    <string name="ranking_temps_total">Temps total</string>
-    <string name="ranking_temps_sobrant">Temps sobrant</string>
+    <string name="ranking_manzanas">🍎  Pomes menjades</string>
+    <string name="ranking_longitud">🐍  Longitud serp</string>
+    <string name="ranking_temps_total">⏱️  Temps total</string>
+    <string name="ranking_temps_sobrant">⏳  Temps sobrant</string>
+    <string name="ranking_tamano">📐  Mida de la graella</string>
 </resources>

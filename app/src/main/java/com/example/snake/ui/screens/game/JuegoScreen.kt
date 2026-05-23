@@ -21,7 +21,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -281,7 +280,7 @@ private fun InfoPartida(
         ) {
             Column {
                 Text(
-                    text       = "👤 $alias",
+                    text       = stringResource(R.string.joc_info_alias, alias),
                     color      = Color.White,
                     fontSize   = 14.sp,
                     fontWeight = FontWeight.SemiBold

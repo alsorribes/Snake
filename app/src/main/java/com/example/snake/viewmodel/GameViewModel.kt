@@ -140,6 +140,12 @@ class GameViewModel(
         iniciarPartida(config)
     }
 
+    // ── Rànquing ─────────────────────────────────────────────────────────────
+
+    fun seleccionarPartida(partida: LogPartida?) {
+        _uiState.update { it.copy(partidaSeleccionada = partida) }
+    }
+
     // ── Joc ─────────────────────────────────────────────────────────────────
 
     private fun iniciarPartida(config: ConfiguracionPartida) {
@@ -302,13 +308,14 @@ class GameViewModelFactory(
 // ── UI State ─────────────────────────────────────────────────────────────────
 
 data class GameUiState(
-    val partida:           Partida?             = null,
-    val log:               LogPartida?          = null,
-    val configuracion:     ConfiguracionUiState = ConfiguracionUiState(),
-    val pantallaActual:    Pantalla             = Pantalla.MENU_PRINCIPAL,
-    val enPausa:           Boolean              = false,
-    val emailDestinatario: String               = EMAIL_DEFECTO,
-    val finPartida:        ResultadoPartida?    = null
+    val partida:             Partida?             = null,
+    val log:                 LogPartida?          = null,
+    val configuracion:       ConfiguracionUiState = ConfiguracionUiState(),
+    val pantallaActual:      Pantalla             = Pantalla.MENU_PRINCIPAL,
+    val enPausa:             Boolean              = false,
+    val emailDestinatario:   String               = EMAIL_DEFECTO,
+    val finPartida:          ResultadoPartida?    = null,
+    val partidaSeleccionada: LogPartida?          = null   // ← criterio 23
 )
 
 data class ConfiguracionUiState(

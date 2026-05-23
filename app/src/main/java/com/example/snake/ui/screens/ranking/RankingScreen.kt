@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -18,45 +19,62 @@ import androidx.compose.ui.unit.sp
 import com.example.snake.R
 import com.example.snake.model.LogPartida
 import com.example.snake.model.ResultadoPartida
+import com.example.snake.model.TamanoParrilla
 import com.example.snake.ui.theme.BackgroundDark
 import com.example.snake.ui.theme.SnakeGreen
 import com.example.snake.ui.theme.SnakeLightGreen
 import com.example.snake.ui.theme.SurfaceCard
 
-private val TABLET_BREAKPOINT_DP = 600
+private const val TABLET_BREAKPOINT_DP = 600
 
 // ── Stateful ─────────────────────────────────────────────────────────────────
 
 @Composable
 fun RankingScreen(
     partidas: List<LogPartida>,
+    seleccionada: LogPartida?,
+    onSeleccionar: (LogPartida?) -> Unit,
     onVolver: () -> Unit
 ) {
-    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+    val configuration = LocalConfiguration.current
     val esTablet      = configuration.screenWidthDp >= TABLET_BREAKPOINT_DP
 
-    var seleccionada by remember { mutableStateOf<LogPartida?>(null) }
+    val tabs      = TamanoParrilla.entries.map { it.etiqueta }
+    var tabActual by remember { mutableIntStateOf(0) }
 
-    // En tablet, seleccionar la primera por defecto si hay partidas
-    LaunchedEffect(partidas) {
-        if (esTablet && seleccionada == null && partidas.isNotEmpty()) {
-            seleccionada = partidas.first()
+    val partidasFiltrades = partidas.filter { it.tamanoParrilla == tabs[tabActual] }
+
+    // En tablet, seleccionar la primera per defecte quan canvia la pestanya
+    LaunchedEffect(tabActual, partidasFiltrades) {
+        if (esTablet && seleccionada == null && partidasFiltrades.isNotEmpty()) {
+            onSeleccionar(partidasFiltrades.first())
         }
+    }
+
+    // Quan canvia la pestanya en mono-panel, tornar a la llista
+    LaunchedEffect(tabActual) {
+        if (!esTablet) onSeleccionar(null)
     }
 
     if (esTablet) {
         RankingBiPanel(
-            partidas     = partidas,
-            seleccionada = seleccionada,
-            onSeleccionar = { seleccionada = it },
-            onVolver     = onVolver
+            tabs              = tabs,
+            tabActual         = tabActual,
+            onTabSeleccionada = { tabActual = it; onSeleccionar(null) },
+            partidas          = partidasFiltrades,
+            seleccionada      = seleccionada,
+            onSeleccionar     = onSeleccionar,
+            onVolver          = onVolver
         )
     } else {
         RankingMonoPanel(
-            partidas      = partidas,
-            onSeleccionar = { seleccionada = it },
-            seleccionada  = seleccionada,
-            onVolver      = onVolver
+            tabs              = tabs,
+            tabActual         = tabActual,
+            onTabSeleccionada = { tabActual = it },
+            partidas          = partidasFiltrades,
+            seleccionada      = seleccionada,
+            onSeleccionar     = onSeleccionar,
+            onVolver          = onVolver
         )
     }
 }
@@ -65,9 +83,12 @@ fun RankingScreen(
 
 @Composable
 private fun RankingBiPanel(
+    tabs: List<String>,
+    tabActual: Int,
+    onTabSeleccionada: (Int) -> Unit,
     partidas: List<LogPartida>,
     seleccionada: LogPartida?,
-    onSeleccionar: (LogPartida) -> Unit,
+    onSeleccionar: (LogPartida?) -> Unit,
     onVolver: () -> Unit
 ) {
     Row(
@@ -76,13 +97,17 @@ private fun RankingBiPanel(
             .background(BackgroundDark)
             .safeDrawingPadding()
     ) {
-        // Panel esquerra: llista
         Column(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight()
         ) {
             RankingHeader(onVolver = onVolver)
+            RankingTabs(
+                tabs          = tabs,
+                tabActual     = tabActual,
+                onSeleccionar = onTabSeleccionada
+            )
             ListaPartidas(
                 partidas      = partidas,
                 seleccionada  = seleccionada,
@@ -90,16 +115,10 @@ private fun RankingBiPanel(
             )
         }
 
-        HorizontalDivider(
-            modifier  = Modifier
-                .fillMaxHeight()
-                .width(1.dp),
-            color     = Color.White.copy(alpha = 0.1f)
-        )
+        VerticalDivider(color = Color.White.copy(alpha = 0.1f))
 
-        // Panel dret: detall
         Box(
-            modifier = Modifier
+            modifier         = Modifier
                 .weight(1f)
                 .fillMaxHeight()
                 .padding(24.dp),
@@ -122,9 +141,12 @@ private fun RankingBiPanel(
 
 @Composable
 private fun RankingMonoPanel(
+    tabs: List<String>,
+    tabActual: Int,
+    onTabSeleccionada: (Int) -> Unit,
     partidas: List<LogPartida>,
     seleccionada: LogPartida?,
-    onSeleccionar: (LogPartida) -> Unit,
+    onSeleccionar: (LogPartida?) -> Unit,
     onVolver: () -> Unit
 ) {
     Column(
@@ -135,23 +157,25 @@ private fun RankingMonoPanel(
     ) {
         if (seleccionada == null) {
             RankingHeader(onVolver = onVolver)
+            RankingTabs(
+                tabs          = tabs,
+                tabActual     = tabActual,
+                onSeleccionar = onTabSeleccionada
+            )
             ListaPartidas(
                 partidas      = partidas,
                 seleccionada  = null,
                 onSeleccionar = onSeleccionar
             )
         } else {
-            // Pantalla de detalle
             Row(
                 modifier          = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TextButton(onClick = { onSeleccionar(seleccionada.copy()) /* reset via null trick */ }) { }
-                // Botón volver al ranking
                 OutlinedButton(
-                    onClick = { onSeleccionar(LogPartida()) },
+                    onClick = { onSeleccionar(null) },
                     colors  = ButtonDefaults.outlinedButtonColors(contentColor = SnakeLightGreen)
                 ) {
                     Text("◀ ${stringResource(R.string.ranking_tornar_llista)}")
@@ -160,7 +184,7 @@ private fun RankingMonoPanel(
             Box(
                 modifier         = Modifier
                     .fillMaxSize()
-                    .padding(24.dp),
+                    .padding(horizontal = 24.dp, vertical = 8.dp),
                 contentAlignment = Alignment.TopCenter
             ) {
                 DetallePartida(partida = seleccionada)
@@ -169,15 +193,15 @@ private fun RankingMonoPanel(
     }
 }
 
-// ── Componentes compartits ────────────────────────────────────────────────────
+// ── Components compartits ─────────────────────────────────────────────────────
 
 @Composable
 private fun RankingHeader(onVolver: () -> Unit) {
     Row(
-        modifier          = Modifier
+        modifier              = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment     = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
@@ -196,10 +220,38 @@ private fun RankingHeader(onVolver: () -> Unit) {
 }
 
 @Composable
+private fun RankingTabs(
+    tabs: List<String>,
+    tabActual: Int,
+    onSeleccionar: (Int) -> Unit
+) {
+    TabRow(
+        selectedTabIndex = tabActual,
+        containerColor   = BackgroundDark,
+        contentColor     = SnakeGreen
+    ) {
+        tabs.forEachIndexed { index, etiqueta ->
+            Tab(
+                selected = tabActual == index,
+                onClick  = { onSeleccionar(index) },
+                text     = {
+                    Text(
+                        text     = etiqueta,
+                        fontSize = 13.sp,
+                        color    = if (tabActual == index) SnakeGreen
+                        else Color.White.copy(alpha = 0.4f)
+                    )
+                }
+            )
+        }
+    }
+}
+
+@Composable
 private fun ListaPartidas(
     partidas: List<LogPartida>,
     seleccionada: LogPartida?,
-    onSeleccionar: (LogPartida) -> Unit
+    onSeleccionar: (LogPartida?) -> Unit
 ) {
     if (partidas.isEmpty()) {
         Box(
@@ -222,7 +274,7 @@ private fun ListaPartidas(
     ) {
         itemsIndexed(partidas) { index, partida ->
             FilaRanking(
-                posicion     = index + 1,
+                posicio      = index + 1,
                 partida      = partida,
                 seleccionada = partida == seleccionada,
                 onClick      = { onSeleccionar(partida) }
@@ -233,23 +285,23 @@ private fun ListaPartidas(
 
 @Composable
 private fun FilaRanking(
-    posicion: Int,
+    posicio: Int,
     partida: LogPartida,
     seleccionada: Boolean,
     onClick: () -> Unit
 ) {
-    val medallaColor = when (posicion) {
-        1    -> Color(0xFFFFD700) // Or
-        2    -> Color(0xFFC0C0C0) // Plata
-        3    -> Color(0xFFCD7F32) // Bronze
-        else -> Color.White.copy(alpha = 0.5f)
-    }
-
-    val medalla = when (posicion) {
+    val medalla = when (posicio) {
         1    -> "🥇"
         2    -> "🥈"
         3    -> "🥉"
-        else -> "#$posicion"
+        else -> "#$posicio"
+    }
+
+    val medallaColor = when (posicio) {
+        1    -> Color(0xFFFFD700)
+        2    -> Color(0xFFC0C0C0)
+        3    -> Color(0xFFCD7F32)
+        else -> Color.White.copy(alpha = 0.5f)
     }
 
     Card(
@@ -262,15 +314,14 @@ private fun FilaRanking(
         )
     ) {
         Row(
-            modifier          = Modifier
+            modifier              = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment     = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // Posició + àlies
             Row(
-                verticalAlignment    = Alignment.CenterVertically,
+                verticalAlignment     = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(medalla, fontSize = 20.sp, color = medallaColor)
@@ -288,8 +339,6 @@ private fun FilaRanking(
                     )
                 }
             }
-
-            // Puntuació + resultat
             Column(horizontalAlignment = Alignment.End) {
                 Text(
                     "🍎 ${partida.manzanasComidas}",
@@ -345,16 +394,16 @@ fun DetallePartida(partida: LogPartida) {
                 color      = resultatColor
             )
             HorizontalDivider(color = Color.White.copy(alpha = 0.1f))
-            FilaDetalle("📐 ${stringResource(R.string.config_tamano_label)}", partida.tamanoParrilla)
-            FilaDetalle("🍎 ${stringResource(R.string.ranking_manzanas)}", "${partida.manzanasComidas}")
-            FilaDetalle("🐍 ${stringResource(R.string.ranking_longitud)}", "${partida.longitudFinal}")
-            FilaDetalle("⏱ ${stringResource(R.string.ranking_temps_total)}", "${partida.tiempoTotalSeg}s")
+            FilaDetalle(stringResource(R.string.ranking_tamano),       partida.tamanoParrilla)
+            FilaDetalle(stringResource(R.string.ranking_manzanas),     "${partida.manzanasComidas}")
+            FilaDetalle(stringResource(R.string.ranking_longitud),     "${partida.longitudFinal}")
+            FilaDetalle(stringResource(R.string.ranking_temps_total),  "${partida.tiempoTotalSeg}s")
             if (partida.controlTiempo && partida.tiempoSobranteSeg > 0) {
-                FilaDetalle("⏳ ${stringResource(R.string.ranking_temps_sobrant)}", "${partida.tiempoSobranteSeg}s")
+                FilaDetalle(stringResource(R.string.ranking_temps_sobrant), "${partida.tiempoSobranteSeg}s")
             }
             partida.fechaHoraFin?.let {
                 HorizontalDivider(color = Color.White.copy(alpha = 0.1f))
-                FilaDetalle("📅 ${stringResource(R.string.resultados_fecha_label)}", partida.fechaHoraFormateada())
+                FilaDetalle(stringResource(R.string.resultados_fecha_label), partida.fechaHoraFormateada())
             }
         }
     }

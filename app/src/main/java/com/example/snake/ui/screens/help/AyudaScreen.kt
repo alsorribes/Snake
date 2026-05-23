@@ -207,21 +207,19 @@ private fun ConfigInfoCard() {
                 fontSize   = 14.sp, fontWeight = FontWeight.Bold, color = SnakeLightGreen
             )
             Spacer(Modifier.height(10.dp))
-            ConfigOption("👤", stringResource(R.string.ayuda_config_alias))
-            ConfigOption("📐", stringResource(R.string.ayuda_config_tamano))
-            ConfigOption("⏱️", stringResource(R.string.ayuda_config_temps))
+            ConfigOption(stringResource(R.string.ayuda_config_alias))
+            ConfigOption(stringResource(R.string.ayuda_config_tamano))
+            ConfigOption(stringResource(R.string.ayuda_config_temps))
         }
     }
 }
 
 @Composable
-private fun ConfigOption(emoji: String, text: String) {
+private fun ConfigOption(text: String) {
     Row(
         modifier          = Modifier.padding(vertical = 3.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(emoji, fontSize = 14.sp)
-        Spacer(Modifier.width(8.dp))
         Text(text, fontSize = 13.sp, color = Color.White.copy(alpha = 0.7f))
     }
 }
