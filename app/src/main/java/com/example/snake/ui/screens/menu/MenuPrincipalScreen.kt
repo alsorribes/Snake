@@ -71,7 +71,7 @@ fun MenuPrincipalScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Text("🐍", fontSize = 56.sp, modifier = Modifier.scale(scale))
+                    Text(stringResource(R.string.emoji_serp), fontSize = 56.sp, modifier = Modifier.scale(scale))
                     Spacer(Modifier.height(4.dp))
                     Text(
                         text          = stringResource(R.string.menu_titol),
@@ -89,7 +89,7 @@ fun MenuPrincipalScreen(
                     )
                     Spacer(Modifier.height(12.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("🍎", fontSize = 14.sp)
+                        Text(stringResource(R.string.emoji_poma), fontSize = 14.sp)
                         Spacer(Modifier.width(4.dp))
                         Text(
                             stringResource(R.string.menu_tagline),
@@ -124,7 +124,7 @@ fun MenuPrincipalScreen(
                 verticalArrangement = Arrangement.Center
             ) {
                 Spacer(Modifier.height(32.dp))
-                Text("🐍", fontSize = 88.sp, modifier = Modifier.scale(scale))
+                Text(stringResource(R.string.emoji_serp), fontSize = 88.sp, modifier = Modifier.scale(scale))
                 Spacer(Modifier.height(8.dp))
                 Text(
                     text          = stringResource(R.string.menu_titol),
@@ -152,7 +152,7 @@ fun MenuPrincipalScreen(
                 SnakeMenuButton(stringResource(R.string.menu_salir), onSalir, primary = false, tint = BtnError)
                 Spacer(Modifier.height(48.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("🍎", fontSize = 18.sp)
+                    Text(stringResource(R.string.emoji_poma), fontSize = 18.sp)
                     Spacer(Modifier.width(6.dp))
                     Text(
                         stringResource(R.string.menu_tagline),

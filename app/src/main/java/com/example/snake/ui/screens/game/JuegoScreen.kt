@@ -390,16 +390,16 @@ private fun ControlesDireccion(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        BotonDireccion("▲", Direccion.ARRIBA,    onCambiarDireccion, Modifier.size(tamanoBoton))
+        BotonDireccion(stringResource(R.string.btn_amunt),    Direccion.ARRIBA,    onCambiarDireccion, Modifier.size(tamanoBoton))
         Row(
             horizontalArrangement = Arrangement.spacedBy(20.dp),
             verticalAlignment     = Alignment.CenterVertically
         ) {
-            BotonDireccion("◀", Direccion.IZQUIERDA, onCambiarDireccion, Modifier.size(tamanoBoton))
+            BotonDireccion(stringResource(R.string.btn_esquerra), Direccion.IZQUIERDA, onCambiarDireccion, Modifier.size(tamanoBoton))
             Box(Modifier.size(tamanoBoton))
-            BotonDireccion("▶", Direccion.DERECHA,   onCambiarDireccion, Modifier.size(tamanoBoton))
+            BotonDireccion(stringResource(R.string.btn_dreta),    Direccion.DERECHA,   onCambiarDireccion, Modifier.size(tamanoBoton))
         }
-        BotonDireccion("▼", Direccion.ABAJO,    onCambiarDireccion, Modifier.size(tamanoBoton))
+        BotonDireccion(stringResource(R.string.btn_avall),   Direccion.ABAJO,     onCambiarDireccion, Modifier.size(tamanoBoton))
     }
 }
 
