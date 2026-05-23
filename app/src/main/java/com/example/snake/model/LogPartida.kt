@@ -17,6 +17,7 @@ enum class ResultadoPartida {
  *  - Al terminar: resultado, tiempos, manzanas, longitud, fecha (desde el juego)
  */
 data class LogPartida(
+    val id: Int = 0,
     val alias: String = "",
     val tamanoParrilla: String = "",
     val controlTiempo: Boolean = false,
