@@ -48,6 +48,12 @@
     <string name="joc_info_temps">⏱️ %d s</string>
     <string name="joc_info_alias">👤 %1$s</string>
 
+    <!-- Botons de direcció -->
+    <string name="btn_amunt">▲</string>
+    <string name="btn_avall">▼</string>
+    <string name="btn_esquerra">◀</string>
+    <string name="btn_dreta">▶</string>
+
     <!-- Resultats -->
     <string name="resultados_titulo">🏁  Resultats</string>
     <string name="resultados_resum">Resum de la partida</string>
@@ -88,10 +94,21 @@
     <string name="ayuda_config_tamano">📐  Mida de la graella: Petita · Mitjana · Gran</string>
     <string name="ayuda_config_temps">⏱️  Control del temps amb límit configurable</string>
 
+    <!-- Decoratius -->
+    <string name="emoji_serp">🐍</string>
+    <string name="emoji_poma">🍎</string>
+    <string name="emoji_ajuda">❓</string>
+    <string name="emoji_or">🥇</string>
+    <string name="emoji_plata">🥈</string>
+    <string name="emoji_bronze">🥉</string>
+    <string name="emoji_gameover">💀</string>
+    <string name="emoji_temps">⏱️</string>
+    <string name="emoji_victoria">🏆</string>
+
     <!-- Rànquing -->
     <string name="ranking_titulo">🏆  Rànquing</string>
     <string name="ranking_volver">◀ Tornar</string>
-    <string name="ranking_tornar_llista">Tornar al rànquing</string>
+    <string name="ranking_tornar_llista">◀ Tornar al rànquing</string>
     <string name="ranking_buit">Encara no hi ha partides guardades</string>
     <string name="ranking_selecciona">Selecciona una partida per veure el detall</string>
     <string name="ranking_manzanas">🍎  Pomes menjades</string>
@@ -99,4 +116,7 @@
     <string name="ranking_temps_total">⏱️  Temps total</string>
     <string name="ranking_temps_sobrant">⏳  Temps sobrant</string>
     <string name="ranking_tamano">📐  Mida de la graella</string>
+    <string name="ranking_posicio">#%1$d</string>
+    <string name="ranking_fila_pomes">🍎 %1$d</string>
+    <string name="ranking_fila_temps">⏱ %1$ds</string>
 </resources>

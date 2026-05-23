@@ -48,7 +48,7 @@ fun AyudaScreen(
                 .padding(horizontal = 24.dp, vertical = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("❓", fontSize = 48.sp)
+            Text(stringResource(R.string.emoji_ajuda), fontSize = 48.sp)
             Spacer(Modifier.height(8.dp))
             Text(
                 text          = stringResource(R.string.ayuda_titulo),
@@ -68,15 +68,15 @@ fun AyudaScreen(
             MiniBoard()
             Spacer(Modifier.height(28.dp))
 
-            HelpCard("🐍", stringResource(R.string.ayuda_serp_titol),      stringResource(R.string.ayuda_serp_cos))
+            HelpCard(stringResource(R.string.emoji_serp),     stringResource(R.string.ayuda_serp_titol),     stringResource(R.string.ayuda_serp_cos))
             Spacer(Modifier.height(12.dp))
-            HelpCard("🍎", stringResource(R.string.ayuda_pomes_titol),     stringResource(R.string.ayuda_pomes_cos))
+            HelpCard(stringResource(R.string.emoji_poma),     stringResource(R.string.ayuda_pomes_titol),    stringResource(R.string.ayuda_pomes_cos))
             Spacer(Modifier.height(12.dp))
-            HelpCard("💀", stringResource(R.string.ayuda_gameover_titol),  stringResource(R.string.ayuda_gameover_cos))
+            HelpCard(stringResource(R.string.emoji_gameover), stringResource(R.string.ayuda_gameover_titol), stringResource(R.string.ayuda_gameover_cos))
             Spacer(Modifier.height(12.dp))
-            HelpCard("⏱️", stringResource(R.string.ayuda_temps_titol),     stringResource(R.string.ayuda_temps_cos))
+            HelpCard(stringResource(R.string.emoji_temps),    stringResource(R.string.ayuda_temps_titol),    stringResource(R.string.ayuda_temps_cos))
             Spacer(Modifier.height(12.dp))
-            HelpCard("🏆", stringResource(R.string.ayuda_victoria_titol),  stringResource(R.string.ayuda_victoria_cos))
+            HelpCard(stringResource(R.string.emoji_victoria), stringResource(R.string.ayuda_victoria_titol), stringResource(R.string.ayuda_victoria_cos))
 
             Spacer(Modifier.height(32.dp))
             ConfigInfoCard()
@@ -93,7 +93,8 @@ fun AyudaScreen(
                     modifier  = Modifier.fillMaxWidth(),
                     shape     = RoundedCornerShape(14.dp),
                     colors    = ButtonDefaults.buttonColors(
-                        containerColor = Color.Transparent, contentColor = Color.White
+                        containerColor = Color.Transparent,
+                        contentColor   = Color.White
                     ),
                     elevation = ButtonDefaults.buttonElevation(0.dp)
                 ) {
@@ -149,11 +150,11 @@ private fun MiniBoard() {
                 Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
                     repeat(boardSize) { col ->
                         val cell  = Pair(row, col)
-                        val color = when {
-                            cell == headCell   -> SnakeGreen
-                            cell in snakeCells -> SnakeLightGreen.copy(alpha = 0.6f)
-                            cell in appleCells -> Color(0xFFE53935)
-                            else               -> MiniBoardEmptyCell
+                        val color = when (cell) {
+                            headCell      -> SnakeGreen
+                            in snakeCells -> SnakeLightGreen.copy(alpha = 0.6f)
+                            in appleCells -> Color(0xFFE53935)
+                            else          -> MiniBoardEmptyCell
                         }
                         Box(
                             modifier = Modifier
@@ -177,7 +178,9 @@ private fun HelpCard(emoji: String, title: String, body: String) {
     ) {
         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.Top) {
             Box(
-                modifier         = Modifier.size(44.dp).clip(CircleShape)
+                modifier         = Modifier
+                    .size(44.dp)
+                    .clip(CircleShape)
                     .background(SnakeGreen.copy(alpha = 0.15f)),
                 contentAlignment = Alignment.Center
             ) { Text(emoji, fontSize = 22.sp) }
@@ -204,7 +207,9 @@ private fun ConfigInfoCard() {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 stringResource(R.string.ayuda_config_seccio_titol),
-                fontSize   = 14.sp, fontWeight = FontWeight.Bold, color = SnakeLightGreen
+                fontSize   = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color      = SnakeLightGreen
             )
             Spacer(Modifier.height(10.dp))
             ConfigOption(stringResource(R.string.ayuda_config_alias))
