@@ -14,18 +14,12 @@ data class Partida(
 
     val haTerminado: Boolean get() = estado != EstadoJuego.EN_CURSO
 
-    /**
-     * FIX [E][K]: tiempo a mostrar en la UI según si hay control de tiempo o no.
-     * - Con control: tiempo RESTANTE (cuenta atrás, en rojo)
-     * - Sin control: tiempo TRANSCURRIDO (cuenta adelante, en azul)
-     */
     val tiempoParaMostrar: Int
         get() = if (config.controlTiempo) tiempoRestanteSeg else tiempoTranscurridoSeg
 
     fun tick(direccion: Direccion): Partida {
         if (haTerminado) return this
 
-        // FIX [J]: cabeza es nullable ahora
         val cabezaActual = serpiente.cabeza ?: return copy(estado = EstadoJuego.PERDIDA_COLISION)
 
         val direccionEfectiva =

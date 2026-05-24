@@ -10,12 +10,7 @@ enum class ResultadoPartida {
     PERDIDA_TIEMPO
 }
 
-/**
- * Contiene todos los datos del log de la partida.
- * Los datos se acumulan en dos fases:
- *  - Al iniciar: alias, tamaño, configuración de tiempo (desde Configuración)
- *  - Al terminar: resultado, tiempos, manzanas, longitud, fecha (desde el juego)
- */
+
 data class LogPartida(
     val id: Int = 0,
     val alias: String = "",
@@ -29,10 +24,7 @@ data class LogPartida(
     val longitudFinal: Int = 0,
     val fechaHoraFin: Date? = null
 ) {
-    /**
-     * FIX [F7]: log completamente en catalán, sin mezcla de idiomas.
-     * Genera el texto formateado para mostrar en Resultados y enviar por email.
-     */
+
     fun generarTexto(): String {
         val sb = StringBuilder()
 
@@ -61,14 +53,12 @@ data class LogPartida(
         return sb.toString().trimEnd()
     }
 
-    /** Asunto del email: "Log – fecha y hora" */
     fun generarAsuntoEmail(): String {
         val fecha = fechaHoraFin ?: Date()
         val formato = SimpleDateFormat("d/M/yy, HH:mm", Locale.getDefault())
         return "Log - ${formato.format(fecha)}"
     }
 
-    /** Fecha y hora formateada para mostrar en pantalla. */
     fun fechaHoraFormateada(): String {
         val fecha = fechaHoraFin ?: Date()
         val formato = SimpleDateFormat("d MMM yyyy HH:mm:ss", Locale.getDefault())

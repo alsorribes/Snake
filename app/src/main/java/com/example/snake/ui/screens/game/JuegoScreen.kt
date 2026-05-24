@@ -74,7 +74,6 @@ fun JuegoScreen(
         return
     }
 
-    // Resol el missatge de fi de partida a partir de l'enum (string externalitzat)
     val mensajeGameOver: String? = when (uiState.finPartida) {
         ResultadoPartida.GANADA           -> stringResource(R.string.msg_ganada)
         ResultadoPartida.PERDIDA_COLISION -> stringResource(R.string.msg_perdida_colision)
@@ -228,7 +227,6 @@ private fun JuegoLandscape(
                 .aspectRatio(partida.columnas.toFloat() / partida.filas.toFloat())
         )
 
-        // Panell dret: scrollable per a evitar tall de botons en pantalles petites
         Column(
             modifier = Modifier
                 .weight(1f)

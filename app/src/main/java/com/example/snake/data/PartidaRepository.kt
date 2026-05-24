@@ -18,7 +18,6 @@ class PartidaRepository(private val dao: PartidaDao) {
     }
 }
 
-// ── Conversions ───────────────────────────────────────────────────────────────
 
 private fun PartidaEntity.aLogPartida() = LogPartida(
     id                = id,

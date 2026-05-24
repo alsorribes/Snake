@@ -65,7 +65,6 @@ fun MenuPrincipalScreen(
                 verticalAlignment     = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(40.dp)
             ) {
-                // Esquerra: logo + títol
                 Column(
                     modifier            = Modifier.weight(1f),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -100,7 +99,6 @@ fun MenuPrincipalScreen(
                     }
                 }
 
-                // Dreta: botons
                 Column(
                     modifier            = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(10.dp),

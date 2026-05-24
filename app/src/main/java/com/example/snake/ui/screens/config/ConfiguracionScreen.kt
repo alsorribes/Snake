@@ -55,14 +55,12 @@ fun ConfiguracionScreen(
             .safeDrawingPadding()
     ) {
         if (esLandscape) {
-            // ── Landscape: dues columnes, sense scroll ─────────────────────────
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 24.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Títol compacte
                 Text(
                     stringResource(R.string.config_titulo),
                     fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = SnakeGreen
@@ -72,7 +70,6 @@ fun ConfiguracionScreen(
                     modifier              = Modifier.fillMaxSize(),
                     horizontalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
-                    // Columna esquerra: àlies + mida
                     Column(
                         modifier            = Modifier.weight(1f),
                         verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -88,7 +85,6 @@ fun ConfiguracionScreen(
                         )
                     }
 
-                    // Columna dreta: temps + botons
                     Column(
                         modifier            = Modifier.weight(1f),
                         verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -123,7 +119,6 @@ fun ConfiguracionScreen(
             }
 
         } else {
-            // ── Portrait: columna amb scroll ───────────────────────────────────
             Column(
                 modifier = Modifier
                     .fillMaxSize()

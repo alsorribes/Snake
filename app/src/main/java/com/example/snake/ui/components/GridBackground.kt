@@ -9,10 +9,6 @@ import androidx.compose.ui.unit.dp
 // FIX [E3]: usar SnakeGreen de SnakeColors en lugar de Color(0xFF4CAF50) hardcoded
 import com.example.snake.ui.theme.SnakeGreen
 
-/**
- * Fondo decorativo compartido entre pantallas.
- * Dibuja una cuadrícula translúcida que evoca el tablero del Snake.
- */
 @Composable
 fun GridBackground() {
     Canvas(modifier = Modifier.fillMaxSize()) {

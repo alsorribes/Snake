@@ -68,7 +68,6 @@ class GameViewModel(
         }
     }
 
-    // ── Configuració ────────────────────────────────────────────────────────
 
     fun actualizarAlias(value: String) {
         _uiState.update {

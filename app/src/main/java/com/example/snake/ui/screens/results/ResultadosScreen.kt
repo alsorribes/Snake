@@ -81,7 +81,6 @@ fun ResultadosScreen(
     val esLandscape =
         LocalConfiguration.current.screenWidthDp > LocalConfiguration.current.screenHeightDp
 
-    // Lambda reutilitzable per validar i enviar l'email
     val onClickEnviar: () -> Unit = {
         if (!EMAIL_REGEX.matches(email)) {
             emailError = context.getString(R.string.error_email_invalido)
@@ -106,7 +105,6 @@ fun ResultadosScreen(
                     .padding(horizontal = 24.dp, vertical = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                // Columna esquerra: títol + estat + data + log
                 Column(
                     modifier            = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -137,7 +135,6 @@ fun ResultadosScreen(
                     )
                 }
 
-                // Columna dreta: email + botons
                 Column(
                     modifier            = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -285,7 +282,6 @@ fun ResultadosScreen(
     }
 }
 
-// ── Composables privats ───────────────────────────────────────────────────────
 
 @Composable
 private fun TarjetaEstatResultat(resultado: ResultadoPartida?) {

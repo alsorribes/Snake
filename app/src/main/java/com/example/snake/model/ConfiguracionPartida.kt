@@ -1,6 +1,5 @@
 package com.example.snake.model
 
-// FIX [E7]: etiquetas en catalán para coherencia con el resto de la app
 enum class TamanoParrilla(val filas: Int, val columnas: Int, val etiqueta: String) {
     PEQUENA(10, 10, "Petita (10×10)"),
     MEDIANA(15, 15, "Mitjana (15×15)"),
